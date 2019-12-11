@@ -26,7 +26,10 @@
     <ClInclude Include="src\graphics\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\io\IOHandler.h">
+    <ClInclude Include="src\macros\IOHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\macros\GLErrorManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

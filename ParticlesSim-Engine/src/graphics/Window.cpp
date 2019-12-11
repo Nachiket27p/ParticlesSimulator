@@ -57,7 +57,13 @@ namespace particlesSimulator
 			}
 
 			glfwMakeContextCurrent(m_GLFWindow);
+			glfwSwapInterval(1);
 			glfwSetWindowSizeCallback(m_GLFWindow, WindowResize);
+
+			if (glewInit() != GLEW_OK) {
+				PRINT_ERROR("GLEW cannot be initialized!");
+			}
+
 			return true;
 		}
 

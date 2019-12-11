@@ -17,19 +17,22 @@ int main(void)
     // report the version of opengl being used
     PRINT_GL_VERSION(glGetString(GL_VERSION));
 
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
 
     while (!window->Closed()) {
-        PRINT_WINDOW_SIZE(window->GetWidth(), window->GetHeight());
-
         window->Clear();
 
-        // create dirty trinagle
-        glBegin(GL_QUADS);
-        glVertex2f(-0.09f, -0.16f);
-        glVertex2f(-0.09f,  0.16f);
-        glVertex2f( 0.09f,  0.16f);
-        glVertex2f( 0.09f, -0.16f);
-        glEnd();
+        //// create dirty trinagle
+        //glBegin(GL_QUADS);
+        //glVertex2f(-0.09f, -0.16f);
+        //glVertex2f(-0.09f,  0.16f);
+        //glVertex2f( 0.09f,  0.16f);
+        //glVertex2f( 0.09f, -0.16f);
+        //glEnd();
+
+        glDrawArrays(GL_ARRAY_BUFFER, 0, 0);
 
         window->Update();
     }
