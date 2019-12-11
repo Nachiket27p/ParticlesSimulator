@@ -22,8 +22,11 @@ int main(void)
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-    while (!window->Closed()) {
-        window->Clear();
+    math::mat4 pos = math::mat4::translation(math::vec3(2, 3, 4));
+    pos *= math::mat4::identity();
+
+    while (!window->closed()) {
+        window->clear();
 
         //// create dirty trinagle
         //glBegin(GL_QUADS);
@@ -35,7 +38,7 @@ int main(void)
 
         glDrawArrays(GL_ARRAY_BUFFER, 0, 0);
 
-        window->Update();
+        window->update();
     }
 
     delete window;

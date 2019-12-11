@@ -2,6 +2,7 @@
 #include <iostream>
 
 namespace particlesSimulator { namespace math {
+
 	struct vec4 {
 		float x, y, z, w;
 			

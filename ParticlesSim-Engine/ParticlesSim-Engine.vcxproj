@@ -154,6 +154,7 @@
   <ItemGroup>
     <ClCompile Include="Engine_main.cpp" />
     <ClCompile Include="src\graphics\Window.cpp" />
+    <ClCompile Include="src\math\Mat4.cpp" />
     <ClCompile Include="src\Math\Vec2.cpp" />
     <ClCompile Include="src\math\Vec3.cpp" />
     <ClCompile Include="src\math\Vec4.cpp" />
@@ -162,6 +163,7 @@
     <ClInclude Include="src\macros\GLErrorManager.h" />
     <ClInclude Include="src\macros\IOHandler.h" />
     <ClInclude Include="src\graphics\Window.h" />
+    <ClInclude Include="src\math\Mat4.h" />
     <ClInclude Include="src\math\Math.h" />
     <ClInclude Include="src\Math\Vec2.h" />
     <ClInclude Include="src\math\Vec3.h" />

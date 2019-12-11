@@ -15,14 +15,14 @@ namespace particlesSimulator { namespace graphics {
 		Window(const char* name, int width, int height);
 		~Window();
 
-		void Update();
-		bool Closed() const;
-		void Clear() const;
+		void update();
+		bool closed() const;
+		void clear() const;
 
-		inline int GetWidth() const { return m_Width; }
-		inline int GetHeight() const { return m_Height; }
+		inline int getWidth() const { return m_Width; }
+		inline int getHeight() const { return m_Height; }
 
 	private:
-		bool Init();
+		bool init();
 	};
 }}
