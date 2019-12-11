@@ -1,5 +1,6 @@
-#include "src/graphics/Window.h"
 #include "IOHandler.h"
+#include "src/graphics/Window.h"
+#include "src/math/Math.h"
 
 int main(void)
 {

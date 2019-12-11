@@ -154,11 +154,18 @@
   <ItemGroup>
     <ClCompile Include="Engine_main.cpp" />
     <ClCompile Include="src\graphics\Window.cpp" />
+    <ClCompile Include="src\Math\Vec2.cpp" />
+    <ClCompile Include="src\math\Vec3.cpp" />
+    <ClCompile Include="src\math\Vec4.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\macros\GLErrorManager.h" />
     <ClInclude Include="src\macros\IOHandler.h" />
     <ClInclude Include="src\graphics\Window.h" />
+    <ClInclude Include="src\math\Math.h" />
+    <ClInclude Include="src\Math\Vec2.h" />
+    <ClInclude Include="src\math\Vec3.h" />
+    <ClInclude Include="src\math\Vec4.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
