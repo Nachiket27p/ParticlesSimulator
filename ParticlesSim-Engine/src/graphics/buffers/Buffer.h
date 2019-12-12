@@ -1,0 +1,22 @@
+#pragma once
+
+#include <GL/glew.h>
+
+namespace particlesSimulator {	namespace graphics {
+	
+	class Buffer
+	{
+	private:
+		GLuint m_bufferID;
+		GLuint m_componentCount;
+
+	public:
+		Buffer(GLfloat* data, const GLsizei count, const GLuint componentCount);
+
+		void bind() const;
+		void unbind() const;
+
+		inline GLuint getComponentCount() const { return m_componentCount; }
+	};
+
+}}

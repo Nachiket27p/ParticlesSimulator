@@ -4,6 +4,10 @@
 #include "src/math/Math.h"
 #include "src/graphics/Shader.h"
 
+#include "src/graphics/buffers/Buffer.h"
+#include "src/graphics/buffers/IndexBuffer.h"
+#include "src/graphics/buffers/VertexArray.h"
+
 const char* vertShaderFilePath = "src/shaders/basic.vert";
 const char* fragShaderFilePath = "src/shaders/basic.frag";
 
@@ -23,19 +27,23 @@ int main(void)
     
     PRINT_GL_VERSION(glGetString(GL_VERSION));
 
-    GLfloat vertices[] = {  0, 0, 0,
-                            8, 0, 0,
-                            0, 3, 0,
-                            0, 3, 0,
-                            8, 3, 0,
-                            8, 0, 0, };
-    
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (const void*)0);
-    glEnableVertexAttribArray(0);
+    GLfloat vertices[] =
+    {
+        0, 0, 0,
+        0, 3, 0,
+        8, 3, 0,
+        8, 0, 0
+    };
+    GLushort indices[] =
+    {
+        0, 1, 2, 2, 3, 0
+    };
+
+    graphics::VertexArray* vertexArray = new graphics::VertexArray();
+    graphics::Buffer* buffer = new graphics::Buffer(vertices, 4 * 3, 3);
+    graphics::IndexBuffer* indexBuffer = new graphics::IndexBuffer(indices, 6);
+
+    vertexArray->addBuffer(buffer, 0);
 
     math::mat4 ortho = math::mat4::orthographic(0.0f, 16.0f, 0.0f, 9.0f, -1.0f, 1.0f);
 
@@ -43,19 +51,26 @@ int main(void)
     shader->enable();
     shader->setUniformMat4("pr_matrix", ortho);
     shader->setUniformMat4("ml_matrix", math::mat4::translate(math::vec3(4,3,0)));
-    shader->setUniform2f("light_pos", math::vec2(4.0f, 1.5f));
+
+    //shader->setUniform2f("light_pos", math::vec2(4.0f, 1.5f));
     shader->setUniform4f("ufm_color", math::vec4(0.2f, 0.3f, 0.8f, 1.0f));
 
     while (!window->closed()) {
         window->clear();
-
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
+        vertexArray->bind();
+        indexBuffer->bind();
+        shader->setUniformMat4("ml_matrix", math::mat4::translate(math::vec3(6, 4.5, 0)));
+        glDrawElements(GL_TRIANGLES, indexBuffer->getCount(), GL_UNSIGNED_SHORT, 0);
+        shader->setUniformMat4("ml_matrix", math::mat4::translate(math::vec3(2, 1.5, 0)));
+        glDrawElements(GL_TRIANGLES, indexBuffer->getCount(), GL_UNSIGNED_SHORT, 0);
+        indexBuffer->unbind();
         window->update();
     }
 
     delete shader;
-
+    delete indexBuffer;
+    delete vertexArray;
+    delete buffer;
     delete window;
 
     return 0;
