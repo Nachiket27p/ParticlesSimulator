@@ -68,7 +68,7 @@ namespace particlesSimulator { namespace math {
 		return result;
 	}
 
-	mat4 mat4::translation(const vec3& translation)
+	mat4 mat4::translate(const vec3& translation)
 	{
 		mat4 result(1.0f);
 
@@ -91,7 +91,7 @@ namespace particlesSimulator { namespace math {
 	}
 
 	
-	mat4 mat4::rotation(float angle, const vec3& axis)
+	mat4 mat4::rotate(float angle, const vec3& axis)
 	{
 		mat4 result(1.0f);
 
@@ -112,9 +112,9 @@ namespace particlesSimulator { namespace math {
 		result.elements[1 + 1 * 4] = y * omc + c;
 		result.elements[2 + 1 * 4] = y * z * omc + x * s;
 
-		result.elements[0 + 1 * 4] = x * z * omc + y * s;
-		result.elements[1 + 1 * 4] = y * z * omc - x * s;
-		result.elements[2 + 1 * 4] = z * omc + c;
+		result.elements[0 + 2 * 4] = x * z * omc + y * s;
+		result.elements[1 + 2 * 4] = y * z * omc - x * s;
+		result.elements[2 + 2 * 4] = z * omc + c;
 
 		return result;
 	}
@@ -127,6 +127,11 @@ namespace particlesSimulator { namespace math {
 	mat4& mat4::operator*=(const mat4& other)
 	{
 		return this->multiply(other);
+	}
+
+	vec4& mat4::operator[](int col)
+	{
+		return colums[col];
 	}
 	
 	

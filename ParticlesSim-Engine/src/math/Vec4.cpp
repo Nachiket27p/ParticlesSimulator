@@ -88,6 +88,21 @@ namespace particlesSimulator { namespace math {
 		return !(*this == other);
 	}
 
+	float& vec4::operator[](int idx)
+	{
+		switch (idx)
+		{
+		case 0:
+			return x;
+		case 1:
+			return y;
+		case 2:
+			return z;
+		case 3:
+			return w;
+		}
+	}
+
 	std::ostream& operator<<(std::ostream& stream, const vec4& vector)
 	{
 		stream << "vec4: (" << vector.x << ", " << vector.y << ", "

@@ -27,5 +27,6 @@ namespace particlesSimulator { namespace math {
 		
 		bool operator==(const vec4& other);
 		bool operator!=(const vec4& other);
+		float& operator[](int idx);
 	};
 }}
