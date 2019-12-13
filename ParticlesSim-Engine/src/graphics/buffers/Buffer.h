@@ -2,21 +2,23 @@
 
 #include <GL/glew.h>
 
-namespace particlesSimulator {	namespace graphics {
-	
-	class Buffer
-	{
-	private:
-		GLuint m_bufferID;
-		GLuint m_componentCount;
+namespace particlesSimulator {
+	namespace graphics {
 
-	public:
-		Buffer(GLfloat* data, const GLsizei count, const GLuint componentCount);
+		class Buffer
+		{
+		private:
+			GLuint m_bufferID;
+			GLuint m_componentCount;
 
-		void bind() const;
-		void unbind() const;
+		public:
+			Buffer(GLfloat* data, const GLsizei count, const GLuint componentCount);
 
-		inline GLuint getComponentCount() const { return m_componentCount; }
-	};
+			void bind() const;
+			void unbind() const;
 
-}}
+			inline GLuint getComponentCount() const { return m_componentCount; }
+		};
+
+	}
+}
