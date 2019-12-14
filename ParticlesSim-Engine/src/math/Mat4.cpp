@@ -3,7 +3,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#define TO_RADIANS(deg) ((deg) * (M_PI / 180.0f));
+#define TO_RADIANS(deg) ((deg) * ((float)M_PI / 180.0f));
 
 namespace particlesSimulator {
 	namespace math {
@@ -23,15 +23,18 @@ namespace particlesSimulator {
 
 		mat4& mat4::multiply(const mat4& other)
 		{
-			for (int row = 0; row < 4; row++) {
-				for (int col = 0; col < 4; col++) {
-					int sum = 0.0f;;
+			float data[16];
+			for (int y = 0; y < 4; y++) {
+				for (int x = 0; x < 4; x++) {
+					float sum = 0.0f;;
 					for (int e = 0; e < 4; e++) {
-						sum += elements[col + e * 4] * other.elements[e + row * 4];
+						sum += elements[x + e * 4] * other.elements[e + y * 4];
 					}
-					elements[col + row * 4] = sum;
+					data[x + y * 4] = sum;
 				}
 			}
+
+			memcpy(elements, data, 16 * 4);
 
 			return *this;
 		}

@@ -1,0 +1,39 @@
+#pragma once
+
+#include <Windows.h>
+
+namespace particlesSimulator {
+
+	class Timer
+	{
+
+	private:
+		LARGE_INTEGER m_start;
+		double m_frequency;
+
+	public:
+		Timer()
+		{
+			LARGE_INTEGER freq;
+			QueryPerformanceFrequency(&freq);
+			m_frequency = 1.0 / freq.QuadPart;
+			QueryPerformanceCounter(&m_start);
+		}
+
+		void reset()
+		{
+			QueryPerformanceCounter(&m_start);
+		}
+
+		float elapsed()
+		{
+			LARGE_INTEGER current;
+			
+			QueryPerformanceCounter(&current);
+
+			unsigned __int64 cycles = current.QuadPart - m_start.QuadPart;
+
+			return (float)(cycles * m_frequency);
+		}
+	};
+}

@@ -32,6 +32,7 @@ namespace particlesSimulator {
 				heightChange = false;
 			}
 			glfwPollEvents();
+			glfwSwapInterval(0);
 			glfwSwapBuffers(m_GLFWindow);
 		}
 

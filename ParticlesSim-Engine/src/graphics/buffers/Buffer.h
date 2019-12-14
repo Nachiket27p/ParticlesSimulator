@@ -13,7 +13,7 @@ namespace particlesSimulator {
 
 		public:
 			Buffer(GLfloat* data, const GLsizei count, const GLuint componentCount);
-
+			~Buffer();
 			void bind() const;
 			void unbind() const;
 

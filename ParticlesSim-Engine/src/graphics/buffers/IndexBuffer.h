@@ -13,6 +13,8 @@ namespace particlesSimulator {
 
 		public:
 			IndexBuffer(GLushort* data, const GLsizei count);
+			IndexBuffer(GLuint* data, const GLsizei count);
+			~IndexBuffer();
 
 			void bind() const;
 			void unbind() const;

@@ -16,7 +16,7 @@ namespace particlesSimulator
 			unsigned long len = ftell(file);
 			fseek(file, 0, SEEK_SET);
 
-			char* data = (char*)calloc(len + (unsigned long)1, sizeof(char));
+			char* data = (char*)calloc(len + 1, sizeof(char));
 
 			if (!len) {
 				return nullptr;
