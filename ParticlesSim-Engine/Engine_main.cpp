@@ -19,8 +19,6 @@
 #include <time.h>
 #include "src/utils/Timer.h"
 
-#define BATCH_RENDERER 1
-
 const char* vertShaderFilePath = "src/shaders/basic.vert";
 const char* fragShaderFilePath = "src/shaders/basic.frag";
 
@@ -44,49 +42,44 @@ int main(void)
 	std::vector<Renderable2D*> sprites;
 	srand(time(NULL));
 
-	for (float y = 0; y < 9.0f; y += 0.05) {
+	/*for (float y = 0; y < 9.0f; y += 0.05) {
 		for (float x = 0; x < 16.0f; x += 0.05) {
-#if BATCH_RENDERER
 			sprites.push_back(new Sprite(x, y, 0.04f, 0.04f, math::vec4(rand() % 1000 / 1000.0f, 0, 1, 1)));
-#else
-			sprites.push_back(new StaticSprite(x, y, 0.04f, 0.04f, math::vec4(rand() % 1000 / 1000.0f, 0, 1, 1), shader));
-#endif
 		}
+	}*/
+
+	float x, y;
+	for (int i = 0; i < 10000; i++) {
+
+		x =  (rand() / (RAND_MAX / 15.0f)) + 0.5f;
+		y = (rand() / (RAND_MAX / 8.0f)) + 0.5f;
+
+		sprites.push_back(new Sprite(x, y, 0.04f, 0.04f, math::vec4(rand() % 1000 / 1000.0f, 0, 1, 1)));
 	}
 
-#if BATCH_RENDERER
-	Sprite sprite(5, 5, 4, 4, math::vec4(1, 0, 1, 1));
-	Sprite sprite2(7, 1, 2, 2, math::vec4(0, 1, 0, 1));
 	BatchRenderer2D renderer;
-#else
-	StaticSprite sprite(5, 5, 4, 4, math::vec4(1, 0, 1, 1), shader);
-	StaticSprite sprite2(7, 1, 2, 2, math::vec4(0, 1, 0, 1), shader);
-	Simple2DRenderer renderer;
-#endif
-	shader.setUniform4f("ufm_color", vec4(0.2f, 0.3f, 0.8f, 1.0f));
+	//shader.setUniform4f("ufm_color", vec4(0.2f, 0.3f, 0.8f, 1.0f));
 
 	Timer time;
 	float timer = 0;
 	unsigned int frames = 0;
 	while (!window->closed()) {
 
-		mat4 mat = mat4::translate(vec3(8, 4.5, 5));
+		/*mat4 mat = mat4::translate(vec3(8, 4.5, 5));
 		mat *= mat4::rotate(time.elapsed() * 50.0f, vec3(0, 0, 1));
 		mat *= mat4::translate(vec3(-8, -4.5, -5));
-		shader.setUniformMat4("ml_matrix", mat);
+		shader.setUniformMat4("ml_matrix", mat);*/
 
 		window->clear();
 
-#if BATCH_RENDERER
 		renderer.begin();
-#endif
+
 		for (int i = 0; i < sprites.size(); i++) {
 			renderer.submit(sprites[i]);
 		}
 
-#if BATCH_RENDERER
 		renderer.end();
-#endif
+
 		renderer.flush();
 
 		window->update();

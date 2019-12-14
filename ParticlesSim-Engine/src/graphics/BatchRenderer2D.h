@@ -7,7 +7,7 @@
 namespace particlesSimulator {
 	namespace graphics {
 
-#define RENDERER_MAX_SPRITES 60000
+#define RENDERER_MAX_SPRITES 250000
 #define RENDERER_VERTEX_SIZE sizeof(VertexData)
 #define RENDERER_SPRITE_SIZE RENDERER_VERTEX_SIZE * 4
 #define RENDERER_BUFFER_SIZE RENDERER_SPRITE_SIZE * RENDERER_MAX_SPRITES
@@ -21,7 +21,8 @@ namespace particlesSimulator {
 		private:
 			GLuint m_vertexArray;
 			GLuint m_vertexBuffer;
-			GLsizei m_indexCount;
+			//GLsizei m_indexCount;
+			GLuint m_indexCount;
 			IndexBuffer* m_indexBuffer;
 			VertexData* m_buffer;
 			
