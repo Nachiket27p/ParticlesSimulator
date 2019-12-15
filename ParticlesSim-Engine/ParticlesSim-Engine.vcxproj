@@ -223,6 +223,10 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="TextureImages\blue.png" />
+    <Image Include="TextureImages\gray.png" />
+    <Image Include="TextureImages\green.png" />
+    <Image Include="TextureImages\lightgray.png" />
+    <Image Include="TextureImages\red.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

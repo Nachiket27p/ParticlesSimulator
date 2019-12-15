@@ -27,8 +27,8 @@
 
 const char* vertShaderFilePath = "src/shaders/basic.vert";
 const char* fragShaderFilePath = "src/shaders/basic.frag";
-const char* textureFilePath = "TextureImages/blue.png";
-const char* textureFilePath2 = "TextureImages/red.png";
+const char* textureFilePath = "TextureImages/lightgray.png";
+const char* textureFilePath2 = "TextureImages/green.png";
 
 int main(void)
 {
@@ -70,12 +70,20 @@ int main(void)
 	//}
 
 	float x, y;
-	for (int i = 0; i < 1000; i++) {
+	for (int i = 0; i < 10000; i++) {
 
 		x =  (rand() / (RAND_MAX / 15.0f)) + 0.5f;
 		y = (rand() / (RAND_MAX / 8.0f)) + 0.5f;
 
-		sprites.push_back(new Sprite(x, y, 0.1f, 0.1f, rand() % 2 == 0 ? texture : texture2));
+		int r = rand() % 100;
+
+		if (r) {
+			sprites.push_back(new Sprite(x, y, 0.05f, 0.05f, texture));
+		}
+		else {
+			sprites.push_back(new Sprite(x, y, 0.1f, 0.1f, texture2));
+		}
+		
 	}
 
 	

@@ -140,5 +140,17 @@
     <Image Include="TextureImages\blue.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="TextureImages\gray.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="TextureImages\lightgray.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="TextureImages\red.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="TextureImages\green.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
