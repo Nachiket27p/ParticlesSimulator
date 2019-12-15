@@ -1,7 +1,9 @@
 #include "IOHandler.h"
 #include "GLErrorManager.h"
-#include "src/graphics/Window.h"
+
 #include "src/math/Math.h"
+
+#include "src/graphics/Window.h"
 #include "src/graphics/Shader.h"
 
 #include "src/graphics/buffers/Buffer.h"
@@ -16,11 +18,17 @@
 #include "src/graphics/StaticSprite.h"
 #include "src/graphics/Sprite.h"
 
+#include "src/graphics/Texture.h"
+
 #include <time.h>
 #include "src/utils/Timer.h"
 
+
+
 const char* vertShaderFilePath = "src/shaders/basic.vert";
 const char* fragShaderFilePath = "src/shaders/basic.frag";
+const char* textureFilePath = "TextureImages/blue.png";
+const char* textureFilePath2 = "TextureImages/red.png";
 
 int main(void)
 {
@@ -34,31 +42,43 @@ int main(void)
 
 	PRINT_GL_VERSION(glGetString(GL_VERSION));
 
-	mat4 ortho = mat4::orthographic(0.0f, 16.0f, 0.0f, 9.0f, -1.0f, 1.0f);
 	Shader shader(vertShaderFilePath, fragShaderFilePath);
+
+	Texture::enableBlending();
+	Texture* texture = new Texture(textureFilePath);
+	Texture* texture2 = new Texture(textureFilePath2);
+
+	GLint texIDs[] =
+	{
+		0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+	};
+
 	shader.enable();
-	shader.setUniformMat4("pr_matrix", ortho);
+	shader.setUniform1iv("textures", texIDs, 10);
+	shader.setUniformMat4("pr_matrix", mat4::orthographic(0.0f, 16.0f, 0.0f, 9.0f, -1.0f, 1.0f));
+
+	BatchRenderer2D renderer;
 
 	std::vector<Renderable2D*> sprites;
 	srand(time(NULL));
 
-	/*for (float y = 0; y < 9.0f; y += 0.05) {
-		for (float x = 0; x < 16.0f; x += 0.05) {
-			sprites.push_back(new Sprite(x, y, 0.04f, 0.04f, math::vec4(rand() % 1000 / 1000.0f, 0, 1, 1)));
-		}
-	}*/
+	//for (float y = 0; y < 9.0f; y++) {
+	//	for (float x = 0; x < 16.0f; x ++) {
+	//		//sprites.push_back(new Sprite(x, y, 0.1f, 0.1f, math::vec4(rand() % 1000 / 1000.0f, 0, 1, 1)));
+	//		sprites.push_back(new Sprite(x, y, 0.1f, 0.1f, rand() % 2 == 0 ? texture : texture2));
+	//	}
+	//}
 
 	float x, y;
-	for (int i = 0; i < 10000; i++) {
+	for (int i = 0; i < 1000; i++) {
 
 		x =  (rand() / (RAND_MAX / 15.0f)) + 0.5f;
 		y = (rand() / (RAND_MAX / 8.0f)) + 0.5f;
 
-		sprites.push_back(new Sprite(x, y, 0.04f, 0.04f, math::vec4(rand() % 1000 / 1000.0f, 0, 1, 1)));
+		sprites.push_back(new Sprite(x, y, 0.1f, 0.1f, rand() % 2 == 0 ? texture : texture2));
 	}
 
-	BatchRenderer2D renderer;
-	//shader.setUniform4f("ufm_color", vec4(0.2f, 0.3f, 0.8f, 1.0f));
+	
 
 	Timer time;
 	float timer = 0;
@@ -92,6 +112,8 @@ int main(void)
 		}
 	}
 
+	delete texture;
+	delete texture2;
 	delete window;
 
 	return 0;
