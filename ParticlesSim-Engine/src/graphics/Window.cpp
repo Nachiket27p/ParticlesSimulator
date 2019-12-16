@@ -8,7 +8,7 @@ namespace particlesSimulator {
 		bool heightChange = false;
 
 		Window::Window(const char* name, int width, int height)
-			:m_Title(name), m_Width(width), m_Height(height), m_GLFWindow(nullptr)
+			:m_title(name), m_width(width), m_orig_width(width), m_orig_height(height), m_height(height), m_glfWindow(nullptr)
 		{
 			if (!init()) {
 				glfwTerminate();
@@ -28,17 +28,17 @@ namespace particlesSimulator {
 			}
 
 			if (heightChange) {
-				glfwGetWindowSize(m_GLFWindow, &m_Width, &m_Height);
+				glfwGetWindowSize(m_glfWindow, &m_width, &m_height);
 				heightChange = false;
 			}
 			glfwPollEvents();
-			glfwSwapInterval(0);
-			glfwSwapBuffers(m_GLFWindow);
+			glfwSwapInterval(1);// vsync 60fps
+			glfwSwapBuffers(m_glfWindow);
 		}
 
 		bool Window::closed() const
 		{
-			return glfwWindowShouldClose(m_GLFWindow);
+			return glfwWindowShouldClose(m_glfWindow);
 		}
 
 		void Window::clear() const
@@ -53,17 +53,17 @@ namespace particlesSimulator {
 				return false;
 			}
 
-			m_GLFWindow = glfwCreateWindow(m_Width, m_Height, m_Title, NULL, NULL);
+			m_glfWindow = glfwCreateWindow(m_width, m_height, m_title, NULL, NULL);
 
-			if (!m_GLFWindow) {
+			if (!m_glfWindow) {
 				glfwTerminate();
 				PRINT_ERROR("Failed to create GLFW window!", "");
 				return false;
 			}
 
-			glfwMakeContextCurrent(m_GLFWindow);
+			glfwMakeContextCurrent(m_glfWindow);
 			glfwSwapInterval(1);
-			glfwSetWindowSizeCallback(m_GLFWindow, windowResize);
+			glfwSetWindowSizeCallback(m_glfWindow, windowResize);
 
 			if (glewInit() != GLEW_OK) {
 				PRINT_ERROR("GLEW cannot be initialized!", "");

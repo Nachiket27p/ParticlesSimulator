@@ -8,9 +8,10 @@ namespace particlesSimulator {
 		class Window
 		{
 		private:
-			const char* m_Title;
-			int m_Width, m_Height;
-			GLFWwindow* m_GLFWindow;
+			const char* m_title;
+			int m_width, m_height;
+			int m_orig_width, m_orig_height;
+			GLFWwindow* m_glfWindow;
 
 		public:
 			Window(const char* name, int width, int height);
@@ -20,8 +21,11 @@ namespace particlesSimulator {
 			bool closed() const;
 			void clear() const;
 
-			inline int getWidth() const { return m_Width; }
-			inline int getHeight() const { return m_Height; }
+			inline int getWidth() const { return m_width; }
+			inline int getHeight() const { return m_height; }
+
+			inline int getOrigWidth() const { return m_orig_width; }
+			inline int getOrigHeignt() const { return m_orig_height; }
 
 		private:
 			bool init();
