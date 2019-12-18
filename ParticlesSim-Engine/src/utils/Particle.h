@@ -8,8 +8,6 @@
 namespace particlesSimulator {
 
 	class Particle {
-	public:
-		int gridIndex;
 	private:
 		graphics::Sprite* m_sprite;
 		math::vec2* m_velocity;

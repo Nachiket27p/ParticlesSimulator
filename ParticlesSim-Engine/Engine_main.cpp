@@ -85,12 +85,15 @@ int main(void)
 			xv = ((rand() / (RAND_MAX / (max_x_velocity * 2))) - max_x_velocity);
 			yv = ((rand() / (RAND_MAX / (max_y_velocity * 2))) - max_y_velocity);
 
+			xv = 0;
+			yv = 0;
+
 			Particle* p = new Particle(x, y, xv, yv, particle0_radius, 1, texture);
 			particles.push_back(p);
 
 			int idx = (((int)(x / grid_width) + 1) * ((int)(y / grid_width) + 1)) - 1;
 			particleGrid[idx].push_back(p);
-			p->gridIndex = idx;
+			//p->gridIndex = idx;
 		}
 	}
 
@@ -140,7 +143,6 @@ int main(void)
 			for (int j = 0; j < particleGrid[i].size(); j++) {
 				int idx = (((int)(particleGrid[i][j]->getSprite()->getPosition().x / grid_width) + 1) * ((int)(particleGrid[i][j]->getSprite()->getPosition().y / grid_width) + 1)) - 1;
 				if (i != idx) {
-					particleGrid[i][j]->gridIndex = idx;
 					particleGrid[idx].push_back(particleGrid[i][j]);
 					particleGrid[i][j]->checkInteractions(particleGrid[idx]);
 					particleGrid[i].erase(particleGrid[i].begin() + j);
