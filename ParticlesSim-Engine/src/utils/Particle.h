@@ -9,6 +9,9 @@ namespace particlesSimulator {
 
 	class Particle {
 
+	public:
+		int gridIndex;
+
 	private:
 		graphics::Sprite* m_sprite;
 		math::vec2* m_velocity;
@@ -23,6 +26,8 @@ namespace particlesSimulator {
 		void updatePosition(std::vector<Particle*>& gridSlot);
 
 		graphics::Sprite* getSprite() { return m_sprite; }
+
+		/*void setGridIndex(int idx) { gridIndex = idx; }*/
 
 	};
 }

@@ -17,7 +17,7 @@
 #include "src/utils/Timer.h"
 #include "../utils/Particle.h"
 
-#define GRID 0
+#define GRID 1
 
 const char* vertShaderFilePath = "shaders/basic.vert";
 const char* fragShaderFilePath = "shaders/basic.frag";
@@ -90,6 +90,7 @@ int main(void)
 
 			int idx = (((int)(x / grid_width) + 1) * ((int)(y / grid_width) + 1)) - 1;
 			particleGrid[idx].push_back(p);
+			p->gridIndex = idx;
 		}
 	}
 
@@ -134,6 +135,15 @@ int main(void)
 			}
 		}
 
+		for (int i = 0; i < gridSize; i++) {
+			for (int j = 0; j < particleGrid[i].size(); j++) {
+				int idx = (((int)(particleGrid[i][j]->getSprite()->getPosition().x / grid_width) + 1) * ((int)(particleGrid[i][j]->getSprite()->getPosition().y / grid_width) + 1)) - 1;
+				if (i != idx) {
+					particleGrid[idx].push_back(particleGrid[i][j]);
+					particleGrid[i].erase(particleGrid[i].begin() + j);
+				}
+			}
+		}
 #else
 		for (int i = 0; i < particles.size(); i++) {
 			particles[i]->updatePosition(particles);
