@@ -12,47 +12,63 @@ namespace particlesSimulator {
 		m_velocity = new math::vec2(xVel, yVel);
 	}
 
-	void Particle::updatePosition(std::vector<Particle*>& gridSlot)
+	void Particle::updatePosition(std::vector<std::vector<Particle*>>& grid, const int idx, const int& gridRows, const int& gridCols)
 	{
 		const math::vec3& p1Pos = m_sprite->getPosition();
 
+		std::vector<int> slots;
+		int row = idx / gridCols;
+		int col = idx % gridCols;
+		slots.push_back(idx);
+		if (col - 1 >= 0) slots.push_back(idx - 1);
+		if (col + 1 < gridCols) slots.push_back(idx + 1);
+		if (row - 1 >= 0) slots.push_back(idx - gridCols);
+		if (row + 1 < gridRows) slots.push_back(idx + gridCols);
+		if ((col - 1 >= 0) && (row - 1 >= 0)) slots.push_back(idx - gridCols - 1);
+		if ((col + 1 >= 0) && (row - 1 >= 0)) slots.push_back(idx - gridCols + 1);
+		if ((col + 1 < gridCols) && (row + 1 < gridRows)) slots.push_back(idx + gridCols + 1);
+		if ((col - 1 >= 0) && (row + 1 < gridRows)) slots.push_back(idx + gridCols - 1);
+
 		// find particles interacting with this one
-		float separation = 0.0f;
-		for (int i = 0; i < gridSlot.size(); i++) {
-			const Particle* p2 = gridSlot[i];
-			if (this == p2) {
-				continue;
-			}
-			const math::vec3& p2Pos = gridSlot[i]->getSprite()->getPosition();
-			float dx = p1Pos.x - p2Pos.x;
-			float dy = p1Pos.y - p2Pos.y;
-			float separation = sqrt(pow(dx, 2) + pow(dy, 2));
+		for (auto a : slots) {
+			float separation = 0.0f;
+			for (int i = 0; i < grid[a].size(); i++) {
+				const Particle* p2 = grid[a][i];
+				if (this == p2) {
+					continue;
+				}
+				const math::vec3& p2Pos = grid[a][i]->getSprite()->getPosition();
+				float dx = p1Pos.x - p2Pos.x;
+				float dy = p1Pos.y - p2Pos.y;
+				float separation = sqrt(pow(dx, 2) + pow(dy, 2));
 
-			if (separation <= particle0_diameter) {
-				float v1x_new, v2x_new, v1y_new, v2y_new;
+				if (separation <= particle0_diameter) {
+					float v1x_new, v2x_new, v1y_new, v2y_new;
 
-				float innerProd1 = ((m_velocity->x - p2->m_velocity->x) * (p1Pos.x - p2Pos.x)) + ((m_velocity->y - p2->m_velocity->y) * (p1Pos.y - p2Pos.y));
-				float norm1 = pow(p1Pos.x - p2Pos.x, 2) + pow(p1Pos.y - p2Pos.y, 2);
-				//float innerProd2 = ((p2->m_velocity->x - m_velocity->x) * (p2Pos.x - p1Pos.x)) + ((p2->m_velocity->y - m_velocity->y) * (p2Pos.y - p1Pos.y));
-				//float norm2 = pow(p2Pos.x - p1Pos.x, 2) + pow(p2Pos.y - p1Pos.y, 2);
+					float innerProd1 = ((m_velocity->x - p2->m_velocity->x) * (p1Pos.x - p2Pos.x)) + ((m_velocity->y - p2->m_velocity->y) * (p1Pos.y - p2Pos.y));
+					float norm1 = pow(p1Pos.x - p2Pos.x, 2) + pow(p1Pos.y - p2Pos.y, 2);
+					//float innerProd2 = ((p2->m_velocity->x - m_velocity->x) * (p2Pos.x - p1Pos.x)) + ((p2->m_velocity->y - m_velocity->y) * (p2Pos.y - p1Pos.y));
+					//float norm2 = pow(p2Pos.x - p1Pos.x, 2) + pow(p2Pos.y - p1Pos.y, 2);
 
-				float reducedMass1 = ((2 * p2->m_mass) / (m_mass + p2->m_mass));
-				float reducedMass2 = ((2 * m_mass) / (m_mass + p2->m_mass));
+					float reducedMass1 = ((2 * p2->m_mass) / (m_mass + p2->m_mass));
+					float reducedMass2 = ((2 * m_mass) / (m_mass + p2->m_mass));
 
-				v1x_new = m_velocity->x - ((reducedMass1 * (innerProd1 / norm1)) * dx);
-				v1y_new = m_velocity->y - ((reducedMass1 * (innerProd1 / norm1)) * dy);
+					v1x_new = m_velocity->x - ((reducedMass1 * (innerProd1 / norm1)) * dx);
+					v1y_new = m_velocity->y - ((reducedMass1 * (innerProd1 / norm1)) * dy);
 
-				v2x_new = p2->m_velocity->x - ((reducedMass2 * (innerProd1 / norm1)) * (-dx));
-				v2y_new = p2->m_velocity->y - ((reducedMass2 * (innerProd1 / norm1)) * (-dy));
+					v2x_new = p2->m_velocity->x - ((reducedMass2 * (innerProd1 / norm1)) * (-dx));
+					v2y_new = p2->m_velocity->y - ((reducedMass2 * (innerProd1 / norm1)) * (-dy));
 
-				m_velocity->x = v1x_new;
-				m_velocity->y = v1y_new;
+					m_velocity->x = v1x_new;
+					m_velocity->y = v1y_new;
 
-				p2->m_velocity->x = v2x_new;
-				p2->m_velocity->y = v2y_new;
+					p2->m_velocity->x = v2x_new;
+					p2->m_velocity->y = v2y_new;
 
+				}
 			}
 		}
+		
 
 		float x_new = p1Pos.x + m_velocity->x * t_interval;
 		float y_new = p1Pos.y + m_velocity->y * t_interval;

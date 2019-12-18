@@ -66,10 +66,6 @@ int main(void)
 	int gridSize = gridRows * gridCols;
 
 #if GRID
-
-	//INCOMPLETE
-	std::vector<Particle*> particles;
-
 	float xv, yv;
 
 	float widthSpacing = orig_window_width / numb_particles_row;
@@ -86,7 +82,6 @@ int main(void)
 			yv = ((rand() / (RAND_MAX / (max_y_velocity * 2))) - max_y_velocity);
 
 			Particle* p = new Particle(x, y, xv, yv, particle0_radius, 1, texture);
-			particles.push_back(p);
 
 			int idx = (((int)(x / grid_width) + 1) * ((int)(y / grid_width) + 1)) - 1;
 			particleGrid[idx].push_back(p);
@@ -129,9 +124,9 @@ int main(void)
 #if GRID
 		// INCOMPLETE
 		for (int i = 0; i < gridSize; i++) {
-			for (auto* p : particleGrid[i]) {
-				p->updatePosition(particleGrid[i]);
-				renderer.submit(p->getSprite());
+			for (int idx= 0; idx < particleGrid[i].size(); idx++) {
+				particleGrid[i][idx]->updatePosition(particleGrid, i, gridRows, gridCols);
+				renderer.submit(particleGrid[i][idx]->getSprite());
 			}
 		}
 

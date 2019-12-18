@@ -23,7 +23,7 @@ namespace particlesSimulator {
 	public:
 		Particle(float x, float y, float xVel, float yVel, float radius, float mass, graphics::Texture* texture);
 
-		void updatePosition(std::vector<Particle*>& gridSlot);
+		void updatePosition(std::vector<std::vector<Particle*>>& grid, const int idx, const int& gridRows, const int& gridCols);
 
 		graphics::Sprite* getSprite() { return m_sprite; }
 
