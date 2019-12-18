@@ -17,6 +17,8 @@
 #include "src/utils/Timer.h"
 #include "../utils/Particle.h"
 
+#define GRID 0
+
 const char* vertShaderFilePath = "shaders/basic.vert";
 const char* fragShaderFilePath = "shaders/basic.frag";
 
@@ -44,7 +46,6 @@ int main(void)
 
 	Texture::enableBlending();
 	Texture* texture = new Texture(textureFilePath);
-	//Texture* texture2 = new Texture(textureFilePath2);
 
 	GLint texIDs[] =
 	{
@@ -53,54 +54,63 @@ int main(void)
 
 	shader.enable();
 	shader.setUniform1iv("textures", texIDs, 10);
-	shader.setUniformMat4("pr_matrix", mat4::orthographic(-1280.0f, 1280.0f, -720.0f, 720.0f, -1.0f, 1.0f));
+	shader.setUniformMat4("pr_matrix", mat4::orthographic(0, orig_window_width, 0, orig_window_height, -1.0f, 1.0f));
 
 	BatchRenderer2D renderer;
 
-	//std::vector<Renderable2D*> sprites;
-	//srand(time(NULL));
-
-	////for (float y = 0; y < 9.0f; y++) {
-	////	for (float x = 0; x < 16.0f; x ++) {
-	////		//sprites.push_back(new Sprite(x, y, 0.1f, 0.1f, math::vec4(rand() % 1000 / 1000.0f, 0, 1, 1)));
-	////		sprites.push_back(new Sprite(x, y, 0.1f, 0.1f, rand() % 2 == 0 ? texture : texture2));
-	////	}
-	////}
-
-	//float x, y;
-	//for (int i = 0; i < 10; i++) {
-
-	//	x =  (rand() / (RAND_MAX / 2560.0f)) - 1280.0f;
-	//	y = (rand() / (RAND_MAX / 1440.0f)) - 720.0f;
-
-	//	int r = rand() % 2;
-
-	//	if (r) {
-	//		sprites.push_back(new Sprite(x, y, 100.0f, 100.0f, texture));
-	//	}
-	//	else {
-	//		sprites.push_back(new Sprite(x, y, 100.0f, 100.0f, texture2));
-	//	}
-	//	
-	//}
-
 	srand(time(NULL));
 
+
+	int gridRows = (int)(orig_window_height / grid_width);
+	int gridCols = (int)(orig_window_width / grid_width);
+	int gridSize = gridRows * gridCols;
+
+#if GRID
+
+	//INCOMPLETE
 	std::vector<Particle*> particles;
-	float x_rend = 1240.0f;
-	float y_rend = 680.0f;
-	float x, y, xv, yv;
-	for (int i = 0; i < numver_of_particles; i++) {
 
-		x = (rand() / (RAND_MAX / (x_rend * 2))) - x_rend;
-		y = (rand() / (RAND_MAX / (y_rend * 2))) - y_rend;
+	float xv, yv;
 
-		xv = ((rand() / (RAND_MAX / (max_x_velocity * 2))) - max_x_velocity);
-		yv = ((rand() / (RAND_MAX / (max_y_velocity * 2))) - max_y_velocity);
+	float widthSpacing = orig_window_width / numb_particles_row;
+	float heightSpacing = orig_window_height / numb_particles_col;
 
-		particles.push_back(new Particle(x, y, xv, yv, particle0_radius, 1, texture));
+	std::vector<std::vector<Particle*>> particleGrid(gridSize);
+	for (int i = 0; i < gridSize; i++) {
+		particleGrid[i] = std::vector<Particle*>();
 	}
 
+	for (float x = particle0_diameter; x < orig_window_width - particle0_diameter; x += widthSpacing) {
+		for (float y = particle0_diameter; y < orig_window_height - particle0_diameter; y += heightSpacing) {
+			xv = ((rand() / (RAND_MAX / (max_x_velocity * 2))) - max_x_velocity);
+			yv = ((rand() / (RAND_MAX / (max_y_velocity * 2))) - max_y_velocity);
+
+			Particle* p = new Particle(x, y, xv, yv, particle0_radius, 1, texture);
+			particles.push_back(p);
+
+			int idx = (((int)(x / grid_width) + 1) * ((int)(y / grid_width) + 1)) - 1;
+			particleGrid[idx].push_back(p);
+		}
+	}
+
+#else
+	std::vector<Particle*> particles;
+
+	float xv, yv;
+
+	float widthSpacing = orig_window_width / numb_particles_row;
+	float heightSpacing = orig_window_height / numb_particles_col;
+
+	for (float x = particle0_diameter; x < orig_window_width - particle0_diameter; x += widthSpacing) {
+		for (float y = particle0_diameter; y < orig_window_height - particle0_diameter; y += heightSpacing) {
+			xv = ((rand() / (RAND_MAX / (max_x_velocity * 2))) - max_x_velocity);
+			yv = ((rand() / (RAND_MAX / (max_y_velocity * 2))) - max_y_velocity);
+
+			particles.push_back(new Particle(x, y, xv, yv, particle0_radius, 1, texture));
+		}
+	}
+
+#endif
 	Timer time;
 	float timer = 0;
 	unsigned int frames = 0;
@@ -115,14 +125,21 @@ int main(void)
 
 		renderer.begin();
 
-		/*for (int i = 0; i < sprites.size(); i++) {
-			renderer.submit(sprites[i]);
-		}*/
+#if GRID
+		// INCOMPLETE
+		for (int i = 0; i < gridSize; i++) {
+			for (auto* p : particleGrid[i]) {
+				p->updatePosition(particleGrid[i]);
+				renderer.submit(p->getSprite());
+			}
+		}
 
+#else
 		for (int i = 0; i < particles.size(); i++) {
-			particles[i]->updatePosition();
+			particles[i]->updatePosition(particles);
 			renderer.submit(particles[i]->getSprite());
 		}
+#endif
 
 		renderer.end();
 
