@@ -130,7 +130,8 @@ int main(void)
 		// INCOMPLETE
 		for (int i = 0; i < gridSize; i++) {
 			for (auto* p : particleGrid[i]) {
-				p->updatePosition(particleGrid[i]);
+				p->checkInteractions(particleGrid[i]);
+				p->updatePosition();
 				renderer.submit(p->getSprite());
 			}
 		}
@@ -139,14 +140,17 @@ int main(void)
 			for (int j = 0; j < particleGrid[i].size(); j++) {
 				int idx = (((int)(particleGrid[i][j]->getSprite()->getPosition().x / grid_width) + 1) * ((int)(particleGrid[i][j]->getSprite()->getPosition().y / grid_width) + 1)) - 1;
 				if (i != idx) {
+					particleGrid[i][j]->gridIndex = idx;
 					particleGrid[idx].push_back(particleGrid[i][j]);
+					particleGrid[i][j]->checkInteractions(particleGrid[idx]);
 					particleGrid[i].erase(particleGrid[i].begin() + j);
 				}
 			}
 		}
 #else
 		for (int i = 0; i < particles.size(); i++) {
-			particles[i]->updatePosition(particles);
+			particles[i]->checkInteractions(particles);
+			particles[i]->updatePosition();
 			renderer.submit(particles[i]->getSprite());
 		}
 #endif

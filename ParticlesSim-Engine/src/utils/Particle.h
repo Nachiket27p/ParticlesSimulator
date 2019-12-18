@@ -8,10 +8,8 @@
 namespace particlesSimulator {
 
 	class Particle {
-
 	public:
 		int gridIndex;
-
 	private:
 		graphics::Sprite* m_sprite;
 		math::vec2* m_velocity;
@@ -23,7 +21,8 @@ namespace particlesSimulator {
 	public:
 		Particle(float x, float y, float xVel, float yVel, float radius, float mass, graphics::Texture* texture);
 
-		void updatePosition(std::vector<Particle*>& gridSlot);
+		void updatePosition();
+		void checkInteractions(std::vector<Particle*>& gridSlot);
 
 		graphics::Sprite* getSprite() { return m_sprite; }
 
