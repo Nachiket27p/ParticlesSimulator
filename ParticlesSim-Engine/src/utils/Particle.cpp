@@ -1,6 +1,5 @@
 #include "Particle.h"
 #include "../graphics/Window.h"
-#include <math.h>
 #include "../InitializationData.h"
 
 namespace particlesSimulator {
@@ -49,33 +48,38 @@ namespace particlesSimulator {
 
 		// find particles interacting with this one
 		float separation = 0.0f;
+
+		float dx, dy, v1x_new, v2x_new, v1y_new, v2y_new, innerProd, reducedMass1, reducedMass2, scalarFactor1, scalarFactor2;
 		for (int i = 0; i < gridSlot.size(); i++) {
 			const Particle* p2 = gridSlot[i];
 			if (this == p2) {
 				continue;
 			}
-			const math::vec3& p2Pos = gridSlot[i]->getSprite()->getPosition();
-			float dx = p1Pos.x - p2Pos.x;
-			float dy = p1Pos.y - p2Pos.y;
-			float separation = sqrt(pow(dx, 2) + pow(dy, 2));
+			
+			const math::vec3& p2Pos = p2->m_sprite->m_position;
+			dx = p1Pos.x - p2Pos.x;
+			dy = p1Pos.y - p2Pos.y;
+			
+			separation = dx*dx + dy*dy; // Also the norm of the position vector from particle 1 to particle 2
 
-			if (separation <= particle0_diameter) {
+			//if (abs(dx) <= particle0_diameter && abs(dy) <= particle0_diameter) {
+			if (separation <= particle0_diameter_Sqrd) {
 				interaction = true;
-				float v1x_new, v2x_new, v1y_new, v2y_new;
 
-				float innerProd1 = ((m_velocity->x - p2->m_velocity->x) * (p1Pos.x - p2Pos.x)) + ((m_velocity->y - p2->m_velocity->y) * (p1Pos.y - p2Pos.y));
-				float norm1 = pow(p1Pos.x - p2Pos.x, 2) + pow(p1Pos.y - p2Pos.y, 2);
-				//float innerProd2 = ((p2->m_velocity->x - m_velocity->x) * (p2Pos.x - p1Pos.x)) + ((p2->m_velocity->y - m_velocity->y) * (p2Pos.y - p1Pos.y));
-				//float norm2 = pow(p2Pos.x - p1Pos.x, 2) + pow(p2Pos.y - p1Pos.y, 2);
+				innerProd = ((m_velocity->x - p2->m_velocity->x) * (p1Pos.x - p2Pos.x)) + ((m_velocity->y - p2->m_velocity->y) * (p1Pos.y - p2Pos.y));
+				//norm = separation;
 
-				float reducedMass1 = ((2 * p2->m_mass) / (m_mass + p2->m_mass));
-				float reducedMass2 = ((2 * m_mass) / (m_mass + p2->m_mass));
+				reducedMass1 = ((2 * p2->m_mass) / (m_mass + p2->m_mass));
+				reducedMass2 = ((2 * m_mass) / (m_mass + p2->m_mass));
 
-				v1x_new = m_velocity->x - ((reducedMass1 * (innerProd1 / norm1)) * dx);
-				v1y_new = m_velocity->y - ((reducedMass1 * (innerProd1 / norm1)) * dy);
+				scalarFactor1 = (reducedMass1 * (innerProd / separation));
+				scalarFactor2 = (reducedMass2 * (innerProd / separation));
 
-				v2x_new = p2->m_velocity->x - ((reducedMass2 * (innerProd1 / norm1)) * (-dx));
-				v2y_new = p2->m_velocity->y - ((reducedMass2 * (innerProd1 / norm1)) * (-dy));
+				v1x_new = m_velocity->x - (scalarFactor1 * dx);
+				v1y_new = m_velocity->y - (scalarFactor1 * dy);
+
+				v2x_new = p2->m_velocity->x - (scalarFactor2 * (-dx));
+				v2y_new = p2->m_velocity->y - (scalarFactor2 * (-dy));
 
 				m_velocity->x = v1x_new;
 				m_velocity->y = v1y_new;

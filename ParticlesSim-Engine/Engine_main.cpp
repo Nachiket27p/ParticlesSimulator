@@ -85,9 +85,6 @@ int main(void)
 			xv = ((rand() / (RAND_MAX / (max_x_velocity * 2))) - max_x_velocity);
 			yv = ((rand() / (RAND_MAX / (max_y_velocity * 2))) - max_y_velocity);
 
-			xv = 0;
-			yv = 0;
-
 			Particle* p = new Particle(x, y, xv, yv, particle0_radius, 1, texture);
 			particles.push_back(p);
 
@@ -130,7 +127,6 @@ int main(void)
 		renderer.begin();
 
 #if GRID
-		// INCOMPLETE
 		for (int i = 0; i < gridSize; i++) {
 			for (auto* p : particleGrid[i]) {
 				p->checkInteractions(particleGrid[i]);
@@ -140,12 +136,13 @@ int main(void)
 		}
 
 		for (int i = 0; i < gridSize; i++) {
+			std::vector<Particle*>& p = particleGrid[i];
 			for (int j = 0; j < particleGrid[i].size(); j++) {
-				int idx = (((int)(particleGrid[i][j]->getSprite()->getPosition().x / grid_width) + 1) * ((int)(particleGrid[i][j]->getSprite()->getPosition().y / grid_width) + 1)) - 1;
+				int idx = (((int)(p[j]->getSprite()->getPosition().x / grid_width) + 1) * ((int)(p[j]->getSprite()->getPosition().y / grid_width) + 1)) - 1;
 				if (i != idx) {
-					particleGrid[idx].push_back(particleGrid[i][j]);
-					particleGrid[i][j]->checkInteractions(particleGrid[idx]);
-					particleGrid[i].erase(particleGrid[i].begin() + j);
+					particleGrid[idx].push_back(p[j]);
+					p[j]->checkInteractions(particleGrid[idx]);
+					p.erase(particleGrid[i].begin() + j);
 				}
 			}
 		}

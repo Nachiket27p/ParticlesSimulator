@@ -21,8 +21,9 @@ namespace particlesSimulator {
 
 		class Renderable2D
 		{
+		public:
+			math::vec3 m_position;// possible risk but worth the performance increase due to direct access from outside
 		protected:
-			math::vec3 m_position;
 			math::vec2 m_size;
 			math::vec4 m_color;
 			std::vector<math::vec2> m_uv;
@@ -40,7 +41,6 @@ namespace particlesSimulator {
 
 			virtual ~Renderable2D() {}
 			
-
 			inline const math::vec3& getPosition() const { return m_position; }
 			inline const math::vec2& getSize() const { return m_size; }
 			inline const math::vec4& getColor() const { return m_color; }
