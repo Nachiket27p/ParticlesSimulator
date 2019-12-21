@@ -21,6 +21,7 @@ namespace particlesSimulator {
 
 		void updatePosition();
 		void checkInteractions(std::vector<Particle*>& gridSlot);
+		int checkInteraction(std::vector<Particle*>& particles, int currentIdx);
 
 		graphics::Sprite* getSprite() { return m_sprite; }
 

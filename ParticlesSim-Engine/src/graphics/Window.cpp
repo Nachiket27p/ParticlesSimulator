@@ -32,7 +32,7 @@ namespace particlesSimulator {
 				heightChange = false;
 			}
 			glfwPollEvents();
-			glfwSwapInterval(0);// vsync 60fps
+			glfwSwapInterval(1);// vsync 60fps
 			glfwSwapBuffers(m_glfWindow);
 		}
 

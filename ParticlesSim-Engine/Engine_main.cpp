@@ -16,7 +16,11 @@
 #include <time.h>
 #include "src/utils/Timer.h"
 #include "../utils/Particle.h"
+#include <map>
+#include <algorithm>
+ 
 
+#define MAP 0
 #define GRID 1
 
 const char* vertShaderFilePath = "shaders/basic.vert";
@@ -32,6 +36,8 @@ extern "C" {
 using namespace particlesSimulator;
 using namespace graphics;
 using namespace math;
+
+bool compareParticles(Particle* a, Particle* b);
 
 int main(void)
 {
@@ -65,9 +71,26 @@ int main(void)
 	int gridCols = (int)(orig_window_width / grid_width);
 	int gridSize = gridRows * gridCols;
 
-#if GRID
+#if MAP
+	int totalParticles = numb_particles_col * numb_particles_row;
+	std::vector<Particle*> particles;
+	//Particle** particles = (Particle**)malloc((totalParticles) * sizeof(Particle*));
+	
+	float widthSpacing = orig_window_width / numb_particles_row;
+	float heightSpacing = orig_window_height / numb_particles_col;
+	float xv, yv;
 
-	//INCOMPLETE
+	for (float x = particle0_diameter; x < orig_window_width - particle0_diameter; x += widthSpacing) {
+		for (float y = particle0_diameter; y < orig_window_height - particle0_diameter; y += heightSpacing) {
+			xv = ((rand() / (RAND_MAX / (max_x_velocity * 2))) - max_x_velocity);
+			yv = ((rand() / (RAND_MAX / (max_y_velocity * 2))) - max_y_velocity);
+
+			Particle* p = new Particle(x, y, xv, yv, particle0_radius, 1, texture);
+			particles.push_back(p);
+		}
+	}
+
+#elif GRID
 	std::vector<Particle*> particles;
 
 	float xv, yv;
@@ -112,6 +135,7 @@ int main(void)
 	}
 
 #endif
+
 	Timer time;
 	float timer = 0;
 	unsigned int frames = 0;
@@ -126,7 +150,25 @@ int main(void)
 
 		renderer.begin();
 
-#if GRID
+#if MAP
+		std::sort(particles.begin(), particles.end(), compareParticles);
+		/*for (int i = 0; i < particles.size(); i++) {
+			Particle* p = particles[i];
+			std::cout << "(" << p->getSprite()->m_position.x << ", " << p->getSprite()->m_position.x << ") : " << (p->getSprite()->m_position.y * orig_window_width) + p->getSprite()->m_position.x << std::endl;
+		}*/
+		int k = 0;
+		for (int i = 0; i < totalParticles; i++) {
+			k = particles[i]->checkInteraction(particles, i);
+			particles[i]->updatePosition();
+			renderer.submit(particles[i]->getSprite());
+			for (int j = 1; j <= k; j++) {
+				particles[i+k]->updatePosition();
+				renderer.submit(particles[i+k]->getSprite());
+			}
+			i += k;
+		}
+		
+#elif GRID
 		for (int i = 0; i < gridSize; i++) {
 			for (auto* p : particleGrid[i]) {
 				p->checkInteractions(particleGrid[i]);
@@ -169,9 +211,20 @@ int main(void)
 	}
 
 	delete texture;
-	//delete texture2;
 	delete window;
 
 	return 0;
 }
 
+bool compareParticles(Particle* a, Particle* b)
+{
+	float aPos = (a->getSprite()->m_position.y) * orig_window_width + a->getSprite()->m_position.x;
+	float bPos = (b->getSprite()->m_position.y) * orig_window_width + b->getSprite()->m_position.x;
+
+	if (aPos < bPos) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
