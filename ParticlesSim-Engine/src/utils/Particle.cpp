@@ -89,7 +89,8 @@ namespace particlesSimulator {
 		}
 	}
 
-	int Particle::checkInteraction(std::vector<Particle*>& particles, int currentIdx)
+	// TOO GLITCHY: particles keep overlapping due to multiple interactions occuring within small timeframe.
+	void Particle::checkInteraction(std::vector<Particle*>& particles, int currentIdx)
 	{
 		float dx, dy, v1x_new, v2x_new, v1y_new, v2y_new, innerProd, reducedMass1, reducedMass2, scalarFactor1, scalarFactor2, separation;
 		Particle* p1 = particles[currentIdx];
@@ -100,14 +101,14 @@ namespace particlesSimulator {
 
 			Particle* p2 = particles[idx--];
 
-			dx = p1->m_sprite->m_position.x - p2->m_sprite->m_position.x;
-			dy = p1->m_sprite->m_position.y - p2->m_sprite->m_position.y;
+			dx = m_sprite->m_position.x - p2->m_sprite->m_position.x;
+			dy = m_sprite->m_position.y - p2->m_sprite->m_position.y;
 
 			separation = (dx * dx) + (dy * dy); // Also the norm of the position vector from particle 1 to particle 2
 
 			while (idx < currentIdx && separation <= particle0_diameter_Sqrd) {
 
-				const math::vec3& p1Pos = p1->m_sprite->m_position;
+				const math::vec3& p1Pos = m_sprite->m_position;
 				const math::vec3& p2Pos = p2->m_sprite->m_position;
 
 				innerProd = ((m_velocity->x - p2->m_velocity->x) * (p1Pos.x - p2Pos.x)) + ((m_velocity->y - p2->m_velocity->y) * (p1Pos.y - p2Pos.y));
@@ -125,12 +126,12 @@ namespace particlesSimulator {
 				v2x_new = p2->m_velocity->x - (scalarFactor2 * (-dx));
 				v2y_new = p2->m_velocity->y - (scalarFactor2 * (-dy));
 
-				p1->m_velocity->x = v1x_new;
-				p1->m_velocity->y = v1y_new;
+				m_velocity->x = v1x_new;
+				m_velocity->y = v1y_new;
 
 				p2->m_velocity->x = v2x_new;
 				p2->m_velocity->y = v2y_new;
-				
+
 				// break is at end
 				if (idx < 0)
 					break;
@@ -138,8 +139,8 @@ namespace particlesSimulator {
 				// move to next particle
 				p2 = particles[idx--];
 
-				dx = p1->m_sprite->m_position.x - p2->m_sprite->m_position.x;
-				dy = p1->m_sprite->m_position.y - p2->m_sprite->m_position.y;
+				dx = m_sprite->m_position.x - p2->m_sprite->m_position.x;
+				dy = m_sprite->m_position.y - p2->m_sprite->m_position.y;
 
 				separation = (dx * dx) + (dy * dy);
 			}
@@ -149,21 +150,20 @@ namespace particlesSimulator {
 
 		// check particles to the RIGHT
 		idx = currentIdx + 1;
-		bool interaction = false;
 		if ((currentIdx + idx) < particles.size()) {
 
 			Particle* p2 = particles[idx++];
 
-			dx = p1->m_sprite->m_position.x - p2->m_sprite->m_position.x;
-			dy = p1->m_sprite->m_position.y - p2->m_sprite->m_position.y;
+			dx = m_sprite->m_position.x - p2->m_sprite->m_position.x;
+			dy = m_sprite->m_position.y - p2->m_sprite->m_position.y;
 
 			separation = (dx * dx) + (dy * dy); // Also the norm of the position vector from particle 1 to particle 2
 
 			while (separation <= particle0_diameter_Sqrd) {
 
-				const math::vec3& p1Pos = p1->m_sprite->m_position;
+				const math::vec3& p1Pos = m_sprite->m_position;
 				const math::vec3& p2Pos = p2->m_sprite->m_position;
-				interaction = true;
+
 				innerProd = ((m_velocity->x - p2->m_velocity->x) * (p1Pos.x - p2Pos.x)) + ((m_velocity->y - p2->m_velocity->y) * (p1Pos.y - p2Pos.y));
 				//norm = separation;
 
@@ -179,8 +179,8 @@ namespace particlesSimulator {
 				v2x_new = p2->m_velocity->x - (scalarFactor2 * (-dx));
 				v2y_new = p2->m_velocity->y - (scalarFactor2 * (-dy));
 
-				p1->m_velocity->x = v1x_new;
-				p1->m_velocity->y = v1y_new;
+				m_velocity->x = v1x_new;
+				m_velocity->y = v1y_new;
 
 				p2->m_velocity->x = v2x_new;
 				p2->m_velocity->y = v2y_new;
@@ -189,16 +189,61 @@ namespace particlesSimulator {
 				// move to next particle
 				p2 = particles[idx++];
 
-				dx = p1->m_sprite->m_position.x - p2->m_sprite->m_position.x;
-				dy = p1->m_sprite->m_position.y - p2->m_sprite->m_position.y;
+				dx = m_sprite->m_position.x - p2->m_sprite->m_position.x;
+				dy = m_sprite->m_position.y - p2->m_sprite->m_position.y;
 
 				separation = (dx * dx) + (dy * dy);
 			}
 		}
+	}
 
-		if (interaction)
-			return idx - 2 - currentIdx;
-		else
-			return 0;
+	void Particle::checkInteractionMk2(std::vector<Particle*>& particles, int currentIdx)
+	{
+		float dx, dy, v1x_new, v2x_new, v1y_new, v2y_new, innerProd, reducedMass1, reducedMass2, scalarFactor1, scalarFactor2, separation;
+		//Particle* p1 = particles[currentIdx];
+		int particlesToCheck = numb_particles_col / 2;
+		int start = currentIdx - particlesToCheck < 0 ? 0 : currentIdx - particlesToCheck;
+		int end = currentIdx + particlesToCheck > particles.size() ? particles.size() : currentIdx + particlesToCheck;
+
+		for (int i = start; i < end; i++) {
+
+			const Particle* p2 = particles[i];
+			if (this == p2) {
+				continue;
+			}
+
+			const math::vec3& p1Pos = m_sprite->m_position;
+			const math::vec3& p2Pos = p2->m_sprite->m_position;
+
+			dx = p1Pos.x - p2Pos.x;
+			dy = p1Pos.y - p2Pos.y;
+
+			separation = (dx * dx) + (dy * dy); // Also the norm of the position vector from particle 1 to particle 2
+
+			//if (abs(dx) <= particle0_diameter && abs(dy) <= particle0_diameter) {
+			if (separation <= particle0_diameter_Sqrd) {
+
+				innerProd = ((m_velocity->x - p2->m_velocity->x) * (p1Pos.x - p2Pos.x)) + ((m_velocity->y - p2->m_velocity->y) * (p1Pos.y - p2Pos.y));
+				//norm = separation;
+
+				reducedMass1 = ((2 * p2->m_mass) / (m_mass + p2->m_mass));
+				reducedMass2 = ((2 * m_mass) / (m_mass + p2->m_mass));
+
+				scalarFactor1 = (reducedMass1 * (innerProd / separation));
+				scalarFactor2 = (reducedMass2 * (innerProd / separation));
+
+				v1x_new = m_velocity->x - (scalarFactor1 * dx);
+				v1y_new = m_velocity->y - (scalarFactor1 * dy);
+
+				v2x_new = p2->m_velocity->x - (scalarFactor2 * (-dx));
+				v2y_new = p2->m_velocity->y - (scalarFactor2 * (-dy));
+
+				m_velocity->x = v1x_new;
+				m_velocity->y = v1y_new;
+
+				p2->m_velocity->x = v2x_new;
+				p2->m_velocity->y = v2y_new;
+			}
+		}
 	}
 }

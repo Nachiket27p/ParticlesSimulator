@@ -20,8 +20,8 @@
 #include <algorithm>
  
 
-#define MAP 0
-#define GRID 1
+#define MAP 1
+#define GRID 0
 
 const char* vertShaderFilePath = "shaders/basic.vert";
 const char* fragShaderFilePath = "shaders/basic.frag";
@@ -91,8 +91,6 @@ int main(void)
 	}
 
 #elif GRID
-	std::vector<Particle*> particles;
-
 	float xv, yv;
 
 	float widthSpacing = orig_window_width / numb_particles_row;
@@ -109,7 +107,6 @@ int main(void)
 			yv = ((rand() / (RAND_MAX / (max_y_velocity * 2))) - max_y_velocity);
 
 			Particle* p = new Particle(x, y, xv, yv, particle0_radius, 1, texture);
-			particles.push_back(p);
 
 			int idx = (((int)(x / grid_width) + 1) * ((int)(y / grid_width) + 1)) - 1;
 			particleGrid[idx].push_back(p);
@@ -158,14 +155,9 @@ int main(void)
 		}*/
 		int k = 0;
 		for (int i = 0; i < totalParticles; i++) {
-			k = particles[i]->checkInteraction(particles, i);
+			particles[i]->checkInteractionMk2(particles, i);
 			particles[i]->updatePosition();
 			renderer.submit(particles[i]->getSprite());
-			for (int j = 1; j <= k; j++) {
-				particles[i+k]->updatePosition();
-				renderer.submit(particles[i+k]->getSprite());
-			}
-			i += k;
 		}
 		
 #elif GRID

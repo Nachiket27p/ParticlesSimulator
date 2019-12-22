@@ -13,15 +13,13 @@ namespace particlesSimulator {
 		math::vec2* m_velocity;
 		float m_mass;
 
-	protected:
-		const float t_interval = 1.0f / 60.0f;
-
 	public:
 		Particle(float x, float y, float xVel, float yVel, float radius, float mass, graphics::Texture* texture);
 
 		void updatePosition();
 		void checkInteractions(std::vector<Particle*>& gridSlot);
-		int checkInteraction(std::vector<Particle*>& particles, int currentIdx);
+		void checkInteraction(std::vector<Particle*>& particles, int currentIdx);
+		void checkInteractionMk2(std::vector<Particle*>& particles, int currentIdx);
 
 		graphics::Sprite* getSprite() { return m_sprite; }
 
