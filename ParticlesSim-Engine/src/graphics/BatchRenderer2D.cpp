@@ -31,6 +31,7 @@ namespace particlesSimulator {
 			glEnableVertexAttribArray(SHADER_TID_INDEX);
 			glEnableVertexAttribArray(SHADER_COLOR_INDEX);
 
+			// tell opengl the locations at which each attribute is located in the struct/sptire data.
 			glVertexAttribPointer(SHADER_VERTEX_INDEX, 3, GL_FLOAT, GL_FALSE, RENDERER_VERTEX_SIZE, (const GLvoid*)(offsetof(VertexData, VertexData::vertex)));
 			glVertexAttribPointer(SHADER_UV_INDEX, 2, GL_FLOAT, GL_FALSE, RENDERER_VERTEX_SIZE, (const GLvoid*)(offsetof(VertexData, VertexData::uv)));
 			glVertexAttribPointer(SHADER_TID_INDEX, 1, GL_FLOAT, GL_FALSE, RENDERER_VERTEX_SIZE, (const GLvoid*)(offsetof(VertexData, VertexData::tid)));
@@ -41,6 +42,7 @@ namespace particlesSimulator {
 			//GLushort* indices = new GLushort[RENDERER_INDICES_SIZE];
 			GLuint* indices = new GLuint[RENDERER_INDICES_SIZE];
 
+			// set up the index vector to render squares.
 			int offset = 0;
 			for (int i = 0; i < RENDERER_INDICES_SIZE; i += 6) {
 
@@ -79,6 +81,8 @@ namespace particlesSimulator {
 			unsigned int col = 0;
 			float ts = 0.0f;
 
+			// check if a txture is going to be rendered, if so map the tecture
+			// otherwise set the color.
 			if (tid > 0) {
 				bool found = false;
 
@@ -109,6 +113,8 @@ namespace particlesSimulator {
 				col = a << 24 | b << 16 | g << 8 | r;
 			}
 
+			// m_buffer points to frist element in the buffer
+			// write the attributes of the vertex, then increment the m_buffer to the next position.
 			m_buffer->vertex = position;
 			m_buffer->uv = uv[0];
 			m_buffer->tid = ts;

@@ -32,7 +32,13 @@ namespace particlesSimulator {
 				heightChange = false;
 			}
 			glfwPollEvents();
-			glfwSwapInterval(1);// vsync 60fps
+
+			// set the vertical sync to be on or off from 'initializationData.h' file.
+#if VSYNC
+			glfwSwapInterval(1);
+#else
+			glfwSwapInterval(0);
+#endif
 			glfwSwapBuffers(m_glfWindow);
 		}
 
@@ -48,6 +54,7 @@ namespace particlesSimulator {
 
 		bool Window::init()
 		{
+			// if there was an error initializing the window print an error
 			if (!glfwInit()) {
 				PRINT_ERROR("Failed to initialize GLFW!", "");
 				return false;
@@ -55,6 +62,7 @@ namespace particlesSimulator {
 
 			m_glfWindow = glfwCreateWindow(m_width, m_height, m_title, NULL, NULL);
 
+			// if the window could not be created for some reason print an error message.
 			if (!m_glfWindow) {
 				glfwTerminate();
 				PRINT_ERROR("Failed to create GLFW window!", "");

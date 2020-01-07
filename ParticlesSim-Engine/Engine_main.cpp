@@ -18,34 +18,45 @@
 #include "../utils/Particle.h"
 #include <map>
 #include <algorithm>
- 
 
-#define MAP 1
-#define GRID 0
-
+// location of vertex shader file
 const char* vertShaderFilePath = "shaders/basic.vert";
+// location of fragment shader file
 const char* fragShaderFilePath = "shaders/basic.frag";
 
+// location of texture files
 const char* textureFilePath = "textureImages/lightgray.png";
 const char* textureFilePath2 = "textureImages/green.png";
 
+// which gpu to use for rendering
+#if NVIDIA
 extern "C" {
 	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 }
+#elif AMD
+extern "C"
+{
+	__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
+#endif
 
 using namespace particlesSimulator;
 using namespace graphics;
 using namespace math;
 
+/*
+This function is responsible for performing the comparision operation when calling the
+sort function on the list of particles used in the 'MAP' mode.
+*/
 bool compareParticles(Particle* a, Particle* b);
 
 int main(void)
 {
-
+	// create new window within which to render
 	Window* window = new Window("Test Window", orig_window_width, orig_window_height);
-
+	// clear the window abd set color to black
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-
+	// print opengl version
 	PRINT_GL_VERSION(glGetString(GL_VERSION));
 
 	Shader shader(vertShaderFilePath, fragShaderFilePath);
@@ -75,7 +86,7 @@ int main(void)
 	int totalParticles = numb_particles_col * numb_particles_row;
 	std::vector<Particle*> particles;
 	//Particle** particles = (Particle**)malloc((totalParticles) * sizeof(Particle*));
-	
+
 	float widthSpacing = orig_window_width / numb_particles_row;
 	float heightSpacing = orig_window_height / numb_particles_col;
 	float xv, yv;
@@ -133,33 +144,34 @@ int main(void)
 
 #endif
 
+	// Matrix transformation to rotate the image but not necessary for the simulation
+
+	/*
+	mat4 mat = mat4::translate(vec3(8, 4.5, 5));
+	mat *= mat4::rotate(time.elapsed() * 50.0f, vec3(0, 0, 1));
+	mat *= mat4::translate(vec3(-8, -4.5, -5));
+	shader.setUniformMat4("ml_matrix", mat);
+	*/
+
 	Timer time;
 	float timer = 0;
 	unsigned int frames = 0;
 	while (!window->closed()) {
-
-		/*mat4 mat = mat4::translate(vec3(8, 4.5, 5));
-		mat *= mat4::rotate(time.elapsed() * 50.0f, vec3(0, 0, 1));
-		mat *= mat4::translate(vec3(-8, -4.5, -5));
-		shader.setUniformMat4("ml_matrix", mat);*/
-
+		// clear the window
 		window->clear();
-
+		// initialize the appropriate properties to start rendering
 		renderer.begin();
 
+		// perform collision checks using 'MAP' method
 #if MAP
 		std::sort(particles.begin(), particles.end(), compareParticles);
-		/*for (int i = 0; i < particles.size(); i++) {
-			Particle* p = particles[i];
-			std::cout << "(" << p->getSprite()->m_position.x << ", " << p->getSprite()->m_position.x << ") : " << (p->getSprite()->m_position.y * orig_window_width) + p->getSprite()->m_position.x << std::endl;
-		}*/
-		int k = 0;
 		for (int i = 0; i < totalParticles; i++) {
 			particles[i]->checkInteractionMk2(particles, i);
 			particles[i]->updatePosition();
 			renderer.submit(particles[i]->getSprite());
 		}
-		
+
+		// perform collsion checks using 'GRID' method
 #elif GRID
 		for (int i = 0; i < gridSize; i++) {
 			for (auto* p : particleGrid[i]) {
@@ -187,14 +199,17 @@ int main(void)
 			renderer.submit(particles[i]->getSprite());
 		}
 #endif
-
+		
 		renderer.end();
 
+		// push all the sprites to the gpu and tell it to render them
 		renderer.flush();
 
+		// tell the window to update its content
 		window->update();
-		frames++;
 
+		// fps counter
+		frames++;
 		if (time.elapsed() - timer > 1.0f) {
 			timer += 1.0f;
 			printf("%d fps\n", frames);
@@ -202,6 +217,7 @@ int main(void)
 		}
 	}
 
+	// delete the texture and window
 	delete texture;
 	delete window;
 

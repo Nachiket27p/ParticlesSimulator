@@ -81,9 +81,12 @@ namespace particlesSimulator {
 			std::string vertss = FileUtils::read_file(m_vertPath);
 			const char* vertexSource = vertss.c_str();
 
+			// give opengl the source code for the vertex shader
+			// and tell opengl to compile the vertex shader that was just passed in.
 			glShaderSource(vertex, 1, &vertexSource, NULL);
 			glCompileShader(vertex);
 
+			// check the compile status of the vertex shader.
 			GLint vResult;
 			glGetShaderiv(vertex, GL_COMPILE_STATUS, &vResult);
 			if (vResult == GL_FALSE) {
@@ -99,12 +102,16 @@ namespace particlesSimulator {
 			// fragment shader
 			GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
 
+			// read the fragment shader from the file path provided
 			std::string fragss = FileUtils::read_file(m_fragPath);
 			const char* fragmentSource = fragss.c_str();
-
+			
+			// give opengl the source code for the fragment shader
+			// and tell opengl to compile the fragment shader that was just passed in.
 			glShaderSource(fragment, 1, &fragmentSource, NULL);
 			glCompileShader(fragment);
 
+			// check the compilation results of the vertex shader.
 			GLint fResult;
 			glGetShaderiv(fragment, GL_COMPILE_STATUS, &fResult);
 			if (fResult == GL_FALSE) {
