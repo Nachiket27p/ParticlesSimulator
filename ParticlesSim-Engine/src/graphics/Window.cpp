@@ -1,5 +1,6 @@
 #include "Window.h"
 #include "IOHandler.h"
+#include "../InitializationData.h"
 
 namespace particlesSimulator {
 	namespace graphics {

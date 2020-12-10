@@ -201,7 +201,7 @@ namespace particlesSimulator {
 	{
 		float dx, dy, v1x_new, v2x_new, v1y_new, v2y_new, innerProd, reducedMass1, reducedMass2, scalarFactor1, scalarFactor2, separation;
 		//Particle* p1 = particles[currentIdx];
-		int particlesToCheck = numb_particles_col / 2;
+		int particlesToCheck = numb_particles_col;
 		int start = currentIdx - particlesToCheck < 0 ? 0 : currentIdx - particlesToCheck;
 		int end = currentIdx + particlesToCheck > particles.size() ? particles.size() : currentIdx + particlesToCheck;
 

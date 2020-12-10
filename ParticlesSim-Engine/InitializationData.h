@@ -40,11 +40,11 @@ namespace particlesSimulator {
 	// Define the number of particles per row and column.
 	// NOTE! if the numer of particles is larger than 'width or height of window'/'diameter of particle' than particles will render
 	// inside each other and undefined behavior is expected breaks.
-	static const int numb_particles_row = 20;
-	static const int numb_particles_col = 20;
+	static const int numb_particles_row = 10;
+	static const int numb_particles_col = 10;
 
 	// Set the radius of the particle
-	static const float particle0_radius = 5.0f;
+	static const float particle0_radius = 20.0f;
 	static const float particle0_diameter = 2.0f * particle0_radius;
 	static const float particle0_diameter_Sqrd = particle0_diameter * particle0_diameter;
 
