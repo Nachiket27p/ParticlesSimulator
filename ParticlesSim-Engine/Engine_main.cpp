@@ -49,6 +49,8 @@ This function is responsible for performing the comparision operation when calli
 sort function on the list of particles used in the 'MAP' mode.
 */
 bool compareParticles(Particle* a, Particle* b);
+void inline resetParticleEdgeList(std::vector<std::vector<Particle*>>& particlesOnEdge);
+void inline computeParticleEdgeList(std::vector<Particle*>& p, std::vector<std::vector<Particle*>>& particlesOnEdge, int j, int col, int row, float px, float py);
 
 int main(void)
 {
@@ -77,11 +79,6 @@ int main(void)
 
 	srand(time(NULL));
 
-
-	int gridRows = (int)(orig_window_height / grid_width);
-	int gridCols = (int)(orig_window_width / grid_width);
-	int gridSize = gridRows * gridCols;
-
 #if MAP
 	int totalParticles = numb_particles_col * numb_particles_row;
 	std::vector<Particle*> particles;
@@ -107,11 +104,13 @@ int main(void)
 	float widthSpacing = orig_window_width / numb_particles_row;
 	float heightSpacing = orig_window_height / numb_particles_col;
 
-	std::vector<std::vector<Particle*>> particleGrid(gridSize);
-	for (int i = 0; i < gridSize; i++) {
+	std::vector<std::vector<Particle*>> particleGrid(grid_size);
+	std::vector<std::vector<Particle*>> particlesOnEdge(grid_size);
+	for (int i = 0; i < grid_size; i++) {
 		particleGrid[i] = std::vector<Particle*>();
+		particlesOnEdge[i] = std::vector<Particle*>();
 	}
-
+	
 	for (float x = particle0_diameter; x < orig_window_width - particle0_diameter; x += widthSpacing) {
 		for (float y = particle0_diameter; y < orig_window_height - particle0_diameter; y += heightSpacing) {
 			xv = ((rand() / (RAND_MAX / (max_x_velocity * 2))) - max_x_velocity);
@@ -124,6 +123,22 @@ int main(void)
 			//p->gridIndex = idx;
 		}
 	}
+
+	//float x = 50;
+	//float y = 50;
+	//int col = (int)(x / grid_width);
+	//int row = (int)(y / grid_width);
+	//int idx = (col + (row*numCols));
+	//Particle* tp1 = new Particle(50, 50, 10, 10, particle0_radius, 1, texture);
+	//particleGrid[idx].push_back(tp1);
+
+	//x = 50;
+	//y = 100;
+	//col = (int)(x / grid_width);
+	//row = (int)(y / grid_width);
+	//idx = (col + (row *numCols));
+	//Particle* tp2 = new Particle(100, 100, -10, -10, particle0_radius, 1, texture);
+	//particleGrid[idx].push_back(tp2);
 
 #else
 	std::vector<Particle*> particles;
@@ -141,6 +156,9 @@ int main(void)
 			particles.push_back(new Particle(x, y, xv, yv, particle0_radius, 1, texture));
 		}
 	}
+
+	//particles.push_back(new Particle(100, 100, 5, 5, particle0_radius, 1, texture));
+	//particles.push_back(new Particle(200, 200, -5, -5, particle0_radius, 1, texture));
 
 #endif
 
@@ -167,34 +185,68 @@ int main(void)
 		std::sort(particles.begin(), particles.end(), compareParticles);
 		for (int i = 0; i < totalParticles; i++) {
 			particles[i]->checkInteractionMk2(particles, i);
-			particles[i]->updatePosition();
-			renderer.submit(particles[i]->getSprite());
+		}
+
+		for (auto* p : particles) {
+			p->resetInteractedWith();
+			p->updatePosition();
+			renderer.submit(p->getSprite());
 		}
 
 		// perform collsion checks using 'GRID' method
 #elif GRID
-		for (int i = 0; i < gridSize; i++) {
+		for (int i = 0; i < grid_size; i++) {
 			for (auto* p : particleGrid[i]) {
-				p->checkInteractions(particleGrid[i]);
+				p->checkInteractions(particleGrid[i], particlesOnEdge[i]);
+			}
+		}
+
+		// Calculate the new positions of the particles after all the velocities have been updated
+		// After calculating the new position submit the particle for rendering
+		for (int i = 0; i < grid_size; i++) {
+			for (auto* p : particleGrid[i]) {
+				p->resetInteractedWith();
 				p->updatePosition();
 				renderer.submit(p->getSprite());
 			}
 		}
-
-		for (int i = 0; i < gridSize; i++) {
+		
+		// clear the list of list of particles crossing over the imaginary grid lines
+		resetParticleEdgeList(particlesOnEdge);
+		for (int i = 0; i < grid_size; i++) {
 			std::vector<Particle*>& p = particleGrid[i];
 			for (int j = 0; j < particleGrid[i].size(); j++) {
-				int idx = (((int)(p[j]->getSprite()->getPosition().x / grid_width) + 1) * ((int)(p[j]->getSprite()->getPosition().y / grid_width) + 1)) - 1;
+				float px = p[j]->getSprite()->getPosition().x;
+				float py = p[j]->getSprite()->getPosition().y;
+				int col = (int)(px / grid_width);
+				int row = (int)(py / grid_width);
+				int idx = (col + (row * numCols));
+				
+				// check if the particle lies on the grid
+				computeParticleEdgeList(p, particlesOnEdge, j, col, row, px, py);
+
+				// check if the particle has move to a different grid slot
 				if (i != idx) {
 					particleGrid[idx].push_back(p[j]);
-					p[j]->checkInteractions(particleGrid[idx]);
 					p.erase(particleGrid[i].begin() + j);
 				}
+
 			}
 		}
+		
+		//std::cout << testParticle->getSprite()->getPosition().x << ", " << testParticle->getSprite()->getPosition().y << std::endl;
 #else
+		// update the velocity based on any interactions
 		for (int i = 0; i < particles.size(); i++) {
 			particles[i]->checkInteractions(particles);
+		}
+
+		for (int i = 0; i < particles.size(); i++) {
+			particles[i]->resetInteractedWith();
+		}
+
+		// update the position and submit to renderer
+		for (int i = 0; i < particles.size(); i++) {
 			particles[i]->updatePosition();
 			renderer.submit(particles[i]->getSprite());
 		}
@@ -222,6 +274,86 @@ int main(void)
 	delete window;
 
 	return 0;
+}
+
+void inline resetParticleEdgeList(std::vector<std::vector<Particle*>>& particlesOnEdge)
+{
+	// clear all the vectors which hold the particles which lie on the edge of a grid
+	for (int i = 0; i < particlesOnEdge.size(); i++)
+		particlesOnEdge[i].clear();
+}
+
+void inline computeParticleEdgeList(std::vector<Particle*>& p, std::vector<std::vector<Particle*>>& particlesOnEdge, int j, int col, int row, float px, float py)
+{
+	// get the size of the particle
+	math::vec2 particleSize = p[j]->getSprite()->getSize();
+	float pW = particleSize[0];
+	
+	float leftX = px - (col * grid_width);
+	float rightX = ((col+1) * grid_width) - px;
+	float bottomY = py - (row * grid_width);
+	float topY = ((row+1) * grid_width) - py;
+	int diag = 0;
+
+	// Shows how each grid boundary is viewed
+	//
+	//	12		  4			6
+	//		-------------
+	//		|			|
+	//	  8	|			| 2
+	//		|			|
+	//		-------------
+	//	7		  1			3
+	//
+
+	// check if the particle overlaps with left or right boundries
+	if (((col-1) >= 0) && (leftX <= 0.0f)) {
+		diag += 8;
+		//(col + (row * numCols));
+		int edgeIdx = (col - 1) + (row*numCols);
+		particlesOnEdge[edgeIdx].push_back(p[j]);
+	}
+	else if (((col+1) < numCols) && (rightX <= pW)) {
+		diag += 2;
+		int edgeIdx = (col + 1) + (row * numCols);
+		particlesOnEdge[edgeIdx].push_back(p[j]);
+	}
+
+	// check if the particle overlaps with top and bottom boundries
+	if (((row-1) >= 0) && (bottomY <= 0.0f)) {
+		diag += 1;
+		int edgeIdx = col + ((row - 1)*numCols);
+		particlesOnEdge[edgeIdx].push_back(p[j]);
+	}
+	else if (((row + 1) < numRows) && (topY <= pW)) {
+		diag += 4;
+		int edgeIdx = col + ((row + 1) * numCols);
+		particlesOnEdge[edgeIdx].push_back(p[j]);
+	}
+
+	// check using diag if the particle is diagonally corssing tow boundries
+	// 3 == the particle is crossing the bottom right corner
+	// 6 == the particle is crossing the top right corner
+	// 12 == the particle is crossing the top left corner
+	// 7 == the particle is crossing the bottom left
+	if (diag) {
+		if (diag == 3) { // Bottom right corner
+			int edgeIdx = (col + 1) + ((row-1)*numCols);
+			particlesOnEdge[edgeIdx].push_back(p[j]);
+		}
+		else if (diag == 6) { // Top right corner
+			int edgeIdx = (col + 1) + ((row + 1)*numCols);
+			particlesOnEdge[edgeIdx].push_back(p[j]);
+		}
+		else if (diag == 12) { // Top left corner
+			int edgeIdx = (col - 1) + ((row + 1)*numCols);
+			particlesOnEdge[edgeIdx].push_back(p[j]);
+		}
+		else if (diag == 7) { // Bottom left corner
+			int edgeIdx = (col - 1) + ((row - 1)*numCols);
+			particlesOnEdge[edgeIdx].push_back(p[j]);
+		}
+	}
 }
 
 bool compareParticles(Particle* a, Particle* b)

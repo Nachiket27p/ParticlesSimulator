@@ -41,6 +41,36 @@ namespace particlesSimulator {
 
 	}
 
+	void Particle::addInteractedWith(Particle* otherParticle)
+	{
+		interactedWith.insert({ otherParticle, true });
+	}
+
+	const bool Particle::hasInteractedWith(Particle* otherParticle)
+	{
+		if (interactedWith.find(otherParticle) != interactedWith.end())
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	void Particle::resetInteractedWith()
+	{
+		interactedWith.clear();
+	}
+
+	void Particle::checkInteractions(std::vector<Particle*>& gridSlot, std::vector<Particle*>& particlesOnEdge)
+	{
+		checkInteractions(gridSlot);
+		// Do additional computation
+		checkInteractions(particlesOnEdge);
+		
+	}
+
 	void Particle::checkInteractions(std::vector<Particle*>& gridSlot)
 	{
 		const math::vec3& p1Pos = m_sprite->m_position;
@@ -50,7 +80,7 @@ namespace particlesSimulator {
 
 		float dx, dy, v1x_new, v2x_new, v1y_new, v2y_new, innerProd, reducedMass1, reducedMass2, scalarFactor1, scalarFactor2;
 		for (int i = 0; i < gridSlot.size(); i++) {
-			const Particle* p2 = gridSlot[i];
+			Particle* p2 = gridSlot[i];
 			if (this == p2) {
 				continue;
 			}
@@ -62,7 +92,10 @@ namespace particlesSimulator {
 			separation = (dx * dx) + (dy * dy); // Also the norm of the position vector from particle 1 to particle 2
 
 			//if (abs(dx) <= particle0_diameter && abs(dy) <= particle0_diameter) {
-			if (separation <= particle0_diameter_Sqrd) {
+			if ((separation <= particle0_diameter_Sqrd) && !hasInteractedWith(p2)) {
+
+				//notify the other particle that it has already interacted with this one.
+				p2->addInteractedWith(this);
 
 				innerProd = ((m_velocity->x - p2->m_velocity->x) * (p1Pos.x - p2Pos.x)) + ((m_velocity->y - p2->m_velocity->y) * (p1Pos.y - p2Pos.y));
 				//norm = separation;
@@ -201,13 +234,13 @@ namespace particlesSimulator {
 	{
 		float dx, dy, v1x_new, v2x_new, v1y_new, v2y_new, innerProd, reducedMass1, reducedMass2, scalarFactor1, scalarFactor2, separation;
 		//Particle* p1 = particles[currentIdx];
-		int particlesToCheck = numb_particles_col;
+		int particlesToCheck = numb_particles_col*2;
 		int start = currentIdx - particlesToCheck < 0 ? 0 : currentIdx - particlesToCheck;
-		int end = currentIdx + particlesToCheck > particles.size() ? particles.size() : currentIdx + particlesToCheck;
+		int end = (currentIdx + particlesToCheck) > particles.size() ? particles.size() : (currentIdx + particlesToCheck);
 
 		for (int i = start; i < end; i++) {
 
-			const Particle* p2 = particles[i];
+			Particle* p2 = particles[i];
 			if (this == p2) {
 				continue;
 			}
@@ -221,7 +254,10 @@ namespace particlesSimulator {
 			separation = (dx * dx) + (dy * dy); // Also the norm of the position vector from particle 1 to particle 2
 
 			//if (abs(dx) <= particle0_diameter && abs(dy) <= particle0_diameter) {
-			if (separation <= particle0_diameter_Sqrd) {
+			if ((separation <= particle0_diameter_Sqrd) && !hasInteractedWith(p2)) {
+
+				//notify the other particle that it has already interacted with this one.
+				p2->addInteractedWith(this);
 
 				innerProd = ((m_velocity->x - p2->m_velocity->x) * (p1Pos.x - p2Pos.x)) + ((m_velocity->y - p2->m_velocity->y) * (p1Pos.y - p2Pos.y));
 				//norm = separation;
