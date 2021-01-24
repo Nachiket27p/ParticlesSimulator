@@ -1,7 +1,7 @@
 # Particle Simulation using OpenGL
 
 ## Info
-    This particle simulator uses OpenGL libraries to render the particles and the CPU is used to perform the physics calculations. This simulator can be configured from the InitializationData.h file. The simulator consists of multiple methos of computing the interactions. The most basic is the brute force every perticle is compared to every other particle, this was only used to ensure the physics was correct. The other methods are 'GRID' and 'MAP' more details about these can be seen below.
+* This particle simulator uses OpenGL libraries to render the particles and the CPU is used to perform the physics calculations. This simulator can be configured from the InitializationData.h file. The simulator consists of multiple methos of computing the interactions. The most basic is the brute force every perticle is compared to every other particle, this was only used to ensure the physics was correct. The other methods are 'GRID' and 'MAP' more details about these can be seen below.
 
 ## Hardware/Softare used to test
 * Dell xps 9560
