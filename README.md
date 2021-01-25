@@ -22,19 +22,19 @@
   * This method can handel up to 10000 particles and maintain up to 120fps.
   * Visualization of the grid method.
 
-                                                            |         |
-                                                    o o o o | o o o o | o o o o
-                                                    o o o o | o o o o | o o o o
-                                                    o o o o | o o o o | o o o o
-                                                ------------|---------|-----------
-                                                    o o o o | o o o o | o o o o
-                                                    o o o o | o o o o | o o o o
-                                                    o o o o | o o o o | o o o o
-                                                ------------|---------|-----------
-                                                    o o o o | o o o o | o o o o
-                                                    o o o o | o o o o | o o o o
-                                                    o o o o | o o o o | o o o o
-                                                            |         |
+                                                    |         |
+                                            o o o o | o o o o | o o o o
+                                            o o o o | o o o o | o o o o
+                                            o o o o | o o o o | o o o o
+                                        ------------|---------|-----------
+                                            o o o o | o o o o | o o o o
+                                            o o o o | o o o o | o o o o
+                                            o o o o | o o o o | o o o o
+                                        ------------|---------|-----------
+                                            o o o o | o o o o | o o o o
+                                            o o o o | o o o o | o o o o
+                                            o o o o | o o o o | o o o o
+                                                    |         |
 * **MAP Method**
   * This method is a little more complicated to extract the most performance out of.
   * To understand this method understand that all the particles can be mapped from 2d coordinates to 1d coordinates and sorting theme places them in the correct ordering.
@@ -42,14 +42,14 @@
   * 2X = (width of grid / diameter of particle) * 3
     * A visualizations, let k denote the particle being checked. and the 'o' be the other particles. The maximum particles we need to check is indicated by the arrows, the number of particles is three rows completely full of particles.
             
-                                                    . . . . . . . . . . .
-                                                    . . . . . . . . . . .
-                                        ------->    o o o o o o o o o o o
-                                        ------->    o o o o o k o o o o o
-                                        ------->    o o o o o o o o o o o
-                                                    . . . . . . . . . . .
-                                                    . . . . . . . . . . .
-                                                    . . . . . . . . . . .
+                                                . . . . . . . . . . .
+                                                . . . . . . . . . . .
+                                    ------->    o o o o o o o o o o o
+                                    ------->    o o o o o k o o o o o
+                                    ------->    o o o o o o o o o o o
+                                                . . . . . . . . . . .
+                                                . . . . . . . . . . .
+                                                . . . . . . . . . . .
 
   * This method can vary on performance based the size of the particle and the width of the canvas. The less particles which can fit in a row along the width of the grid the less particles this method has to check so the better the performance. So for a narrow width and a large particle size yields better performance than the GRID method. Alternatively if the density of particles is sparse and the width is large than this method in the limit will eventualy change into the brute force method because it will check every particle.
 
