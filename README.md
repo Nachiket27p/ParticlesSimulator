@@ -19,7 +19,7 @@
   * This methid is the balance between performance and flexibility.
   * To expand on the statement above because the canvas is split into a virtual grid it only needs to check interactions between particles in the grid.
   * This method is flexible because there there is no specific relation between the particle size and the canvas size which affects the performance like the MAP method.
-  * This method can handel up to 10000 particles and maintain up to 120fps.
+  * This method can handel up to 40,000 particles at 60fps.
   * Visualization of the grid method.
 
                                                     |         |
