@@ -32,21 +32,21 @@ namespace particlesSimulator {
 
 	// Enable or disable vertical sync.
 	// NOTE! diabling vertical sync can have unusual behavior due to the position update frequency of the particles being 60 Hz.
-	#define VSYNC 1
+	#define VSYNC 0
 
 	// Set the width and height of the window in which to render
 	// The window is resizable after starting the progrm but everything will scale with the window size
-	static const int orig_window_width = 2000;
+	static const int orig_window_width = 3000;
 	static const int orig_window_height = 2000;
 
 	// Define the number of particles per row and column.
 	// NOTE! if the numer of particles is larger than 'width or height of window'/'diameter of particle' than particles will render
 	// inside each other and undefined behavior is expected breaks.
-	static const int numb_particles_row = 40;
-	static const int numb_particles_col = 40;
+	static const int numb_particles_row = 250;
+	static const int numb_particles_col = 200;
 
 	// Set the radius of the particle
-	static const float particle0_radius = 5.0f;
+	static const float particle0_radius = 2.0f;
 	static const float particle0_diameter = 2.0f * particle0_radius;
 	static const float particle0_diameter_Sqrd = particle0_diameter * particle0_diameter;
 

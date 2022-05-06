@@ -123,7 +123,7 @@ namespace particlesSimulator {
 			return result;
 		}
 
-		mat4 math::operator*(mat4 matrix, const mat4& other)
+		mat4 operator*(mat4 matrix, const mat4& other)
 		{
 			return matrix.multiply(other);
 		}
@@ -139,6 +139,5 @@ namespace particlesSimulator {
 		}
 
 
-
-	}
+}
 }
