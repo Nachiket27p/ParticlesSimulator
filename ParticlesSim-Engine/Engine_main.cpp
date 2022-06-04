@@ -18,6 +18,8 @@
 #include "../utils/Particle.h"
 #include <map>
 #include <algorithm>
+#include <thread>
+#include <semaphore>
 
 // location of vertex shader file
 const char* vertShaderFilePath = "shaders/basic.vert";
@@ -29,11 +31,11 @@ const char* textureFilePath = "textureImages/lightgray.png";
 const char* textureFilePath2 = "textureImages/green.png";
 
 // which gpu to use for rendering
-#if NVIDIA
+#if defined(NVIDIA)
 extern "C" {
 	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 }
-#elif AMD
+#elif defined(AMD)
 extern "C"
 {
 	__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
@@ -52,8 +54,47 @@ bool compareParticles(Particle* a, Particle* b);
 void inline resetParticleEdgeList(std::vector<std::vector<Particle*>>& particlesOnEdge);
 void inline computeParticleEdgeList(std::vector<Particle*>& p, std::vector<std::vector<Particle*>>& particlesOnEdge, int j, int col, int row, float px, float py);
 
+#if defined(MT)
+void worker_check_interactions(std::vector<std::vector<Particle*>>& particleGrid, std::vector<std::vector<Particle*>>& particlesOnEdge, int startIdx, int endIdx, int wkrId);
+std::vector<std::thread> workers(worker_count);
+std::vector<std::binary_semaphore* > workerSemaphores(worker_count);
+std::vector<std::binary_semaphore* > workerUpdatePositionSemaphores(worker_count);
+std::counting_semaphore mainThreadSemaphore(0);
+bool noMoreWork = FALSE;
+#endif
+
+#if defined(MAP)
+
+int totalParticles = numb_particles_col * numb_particles_row;
+std::vector<Particle*> particles;
+//Particle** particles = (Particle**)malloc((totalParticles) * sizeof(Particle*));
+
+float widthSpacing = orig_window_width / numb_particles_row;
+float heightSpacing = orig_window_height / numb_particles_col;
+float xv, yv;
+
+#elif defined(GRID)
+
+float xv, yv;
+float widthSpacing = orig_window_width / numb_particles_row;
+float heightSpacing = orig_window_height / numb_particles_col;
+
+std::vector<std::vector<Particle*>> particleGrid(grid_size);
+std::vector<std::vector<Particle*>> particlesOnEdge(grid_size);
+
+#endif
+
+BatchRenderer2D* renderer;
+
 int main(void)
 {
+#if defined(MT)
+	for (int wkr = 0; wkr < worker_count; wkr++)
+	{
+		workerSemaphores[wkr] = new std::binary_semaphore(0);
+	}
+#endif
+
 	// create new window within which to render
 	Window* window = new Window("Test Window", orig_window_width, orig_window_height);
 	// clear the window abd set color to black
@@ -75,19 +116,11 @@ int main(void)
 	shader.setUniform1iv("textures", texIDs, 10);
 	shader.setUniformMat4("pr_matrix", mat4::orthographic(0, orig_window_width, 0, orig_window_height, -1.0f, 1.0f));
 
-	BatchRenderer2D renderer;
+	renderer = new BatchRenderer2D();
 
 	srand(time(NULL));
 
-#if MAP
-	int totalParticles = numb_particles_col * numb_particles_row;
-	std::vector<Particle*> particles;
-	//Particle** particles = (Particle**)malloc((totalParticles) * sizeof(Particle*));
-
-	float widthSpacing = orig_window_width / numb_particles_row;
-	float heightSpacing = orig_window_height / numb_particles_col;
-	float xv, yv;
-
+#if defined(MAP)
 	for (float x = particle0_diameter; x < orig_window_width - particle0_diameter; x += widthSpacing) {
 		for (float y = particle0_diameter; y < orig_window_height - particle0_diameter; y += heightSpacing) {
 			xv = ((rand() / (RAND_MAX / (max_x_velocity * 2))) - max_x_velocity);
@@ -98,18 +131,12 @@ int main(void)
 		}
 	}
 
-#elif GRID
-	float xv, yv;
-
-	float widthSpacing = orig_window_width / numb_particles_row;
-	float heightSpacing = orig_window_height / numb_particles_col;
-
-	std::vector<std::vector<Particle*>> particleGrid(grid_size);
-	std::vector<std::vector<Particle*>> particlesOnEdge(grid_size);
+#elif defined(GRID)
 	for (int i = 0; i < grid_size; i++) {
 		particleGrid[i] = std::vector<Particle*>();
 		particlesOnEdge[i] = std::vector<Particle*>();
 	}
+	
 	
 	for (float x = particle0_diameter; x < orig_window_width - particle0_diameter; x += widthSpacing) {
 		for (float y = particle0_diameter; y < orig_window_height - particle0_diameter; y += heightSpacing) {
@@ -171,6 +198,18 @@ int main(void)
 	shader.setUniformMat4("ml_matrix", mat);
 	*/
 
+#if defined(MT)
+	// launch the worker threads
+	int startIdx = 0;
+	int workersLeft = worker_count;
+	for (int wkr = 0; wkr < worker_count; wkr++)
+	{
+		workers[wkr] = std::thread(worker_check_interactions, std::ref(particleGrid), std::ref(particlesOnEdge), startIdx, startIdx + worker_load - 1, wkr);
+		workers[wkr].detach();
+		startIdx += worker_load;
+	}
+#endif
+
 	Timer time;
 	float timer = 0;
 	unsigned int frames = 0;
@@ -178,10 +217,11 @@ int main(void)
 		// clear the window
 		window->clear();
 		// initialize the appropriate properties to start rendering
-		renderer.begin();
+		renderer->begin();
 
 		// perform collision checks using 'MAP' method
-#if MAP
+#if defined(MAP)
+
 		std::sort(particles.begin(), particles.end(), compareParticles);
 		for (int i = 0; i < totalParticles; i++) {
 			particles[i]->checkInteractionMk2(particles, i);
@@ -193,8 +233,51 @@ int main(void)
 			renderer.submit(p->getSprite());
 		}
 
+
+#elif defined(GRID)
+
 		// perform collsion checks using 'GRID' method
-#elif GRID
+
+#if defined(MT)
+		// release the workers for the first phase to compute the interactions
+		for (int wkr = 0; wkr < worker_count; wkr++)
+		{
+			workerSemaphores[wkr]->release();
+		}
+
+		// wait for all the workers to finish the first phase before re-releasing theme to update their
+		// positions based on the new velocities
+		workersLeft = worker_count;
+		while (workersLeft)
+		{
+			mainThreadSemaphore.acquire();
+			--workersLeft;
+		}
+
+		// re release the locks for the workers to update thier posititoion and clear interacted with list
+		for (int wkr = 0; wkr < worker_count; wkr++)
+		{
+			workerSemaphores[wkr]->release();
+		}
+
+		// wait for workers to finish the next phase before submitting the sprites
+		workersLeft = worker_count;
+		while (workersLeft)
+		{
+			mainThreadSemaphore.acquire();
+			--workersLeft;
+		}
+
+		// Calculate the new positions of the particles after all the velocities have been updated
+		// After calculating the new position submit the particle for rendering
+		for (int i = 0; i < grid_size; i++) {
+			for (auto* p : particleGrid[i]) {
+				renderer->submit(p->getSprite());
+			}
+		}
+
+#else // MT
+
 		for (int i = 0; i < grid_size; i++) {
 			for (auto* p : particleGrid[i]) {
 				p->checkInteractions(particleGrid[i], particlesOnEdge[i]);
@@ -207,9 +290,11 @@ int main(void)
 			for (auto* p : particleGrid[i]) {
 				p->resetInteractedWith();
 				p->updatePosition();
-				renderer.submit(p->getSprite());
+				renderer->submit(p->getSprite());
 			}
 		}
+
+#endif // MT
 		
 		// clear the list of list of particles crossing over the imaginary grid lines
 		resetParticleEdgeList(particlesOnEdge);
@@ -252,22 +337,26 @@ int main(void)
 		}
 #endif
 		
-		renderer.end();
+		renderer->end();
 
 		// push all the sprites to the gpu and tell it to render them
-		renderer.flush();
+		renderer->flush();
 
 		// tell the window to update its content
 		window->update();
 
 		// fps counter
 		frames++;
-		if (time.elapsed() - timer > 1.0f) {
-			timer += 1.0f;
-			printf("%d fps\n", frames);
+		if (time.elapsed() - timer > 5.0f) {
+			timer += 5.0f;
+			printf("%d fps\n", frames/5);
 			frames = 0;
 		}
 	}
+
+#if defined(MT)
+	noMoreWork = TRUE;
+#endif
 
 	// delete the texture and window
 	delete texture;
@@ -275,6 +364,36 @@ int main(void)
 
 	return 0;
 }
+
+#if defined(MT)
+void worker_check_interactions(std::vector<std::vector<Particle*>>& particleGrid, std::vector<std::vector<Particle*>>& particlesOnEdge, int startIdx, int endIdx, int wkrId)
+{
+	while (TRUE)
+	{
+		workerSemaphores[wkrId]->acquire(); // acquire lock for first phase
+
+		if (noMoreWork)
+			break;
+
+		for (int i = startIdx; i <= endIdx; i++) {
+			for (auto* p : particleGrid[i]) {
+				p->checkInteractions(particleGrid[i], particlesOnEdge[i]);
+			}
+		}
+		mainThreadSemaphore.release(); // release the lock for the main thread to make progress
+		workerSemaphores[wkrId]->acquire(); // reacquire lock lock for next phase
+
+		for (int i = startIdx; i <= endIdx; i++) {
+			for (auto* p : particleGrid[i]) {
+				p->resetInteractedWith();
+				p->updatePosition();
+			}
+		}
+
+		mainThreadSemaphore.release();
+	}
+}
+#endif
 
 void inline resetParticleEdgeList(std::vector<std::vector<Particle*>>& particlesOnEdge)
 {

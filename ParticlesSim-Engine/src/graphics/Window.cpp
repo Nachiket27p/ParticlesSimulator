@@ -35,7 +35,7 @@ namespace particlesSimulator {
 			glfwPollEvents();
 
 			// set the vertical sync to be on or off from 'initializationData.h' file.
-#if VSYNC
+#if defined(VSYNC)
 			glfwSwapInterval(1);
 #else
 			glfwSwapInterval(0);
